@@ -85,7 +85,11 @@ variables below.
 | `SECRET_KEY` | Signs the admin login session cookie. **Change this** to a long random string, or anyone can forge an admin session. | Yes |
 | `SUPPLIER_NAME` | Your business name, shown on the lab-supplier lease agreement. | Recommended |
 | `SUPPLIER_ADDRESS` | Your business address, same agreement. | Optional |
-| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USERNAME`, `EMAIL_PASSWORD`, `EMAIL_FROM` | SMTP settings for the "email me these documents" button. Works with a Gmail account + app password, Office 365, SendGrid, Mailgun, Postmark, or any SMTP relay. Leave `EMAIL_HOST` unset to disable email sending. | Optional (feature disabled without it) |
+| `BREVO_API_KEY`, `EMAIL_FROM` | **Recommended** way to enable the "email me these documents" button. Sends over Brevo's HTTPS API, which works on hosts (Railway, Render, Heroku, ...) that block outbound SMTP entirely. Brevo's free plan (300 emails/day, no expiration) is plenty for this. `EMAIL_FROM` must be a verified sender in Brevo — either a single address confirmed by a 6-digit emailed code, or any address on a domain you've fully authenticated with Brevo (a domain with a strict DMARC policy requires the latter). | Optional (feature disabled without it) |
+| `EMAIL_FROM_NAME` | Optional display name shown next to `EMAIL_FROM` (e.g. "AmericaSmiles Sales"). Purely cosmetic — doesn't need to be verified anywhere. | Optional |
+| `EMAIL_REPLY_TO` | Optional. If a doctor hits "Reply," it goes here instead of `EMAIL_FROM`. Useful when `EMAIL_FROM` has to be an already-verified address on a different domain (e.g. your main domain's DMARC policy is blocking sender verification there) — set this to the address you actually want replies to land in. | Optional |
+| `SENDGRID_API_KEY`, `EMAIL_FROM` | Same idea as Brevo above, if you'd rather use SendGrid (note: SendGrid's free plan no longer exists, it's a 60-day trial only now). Used only if `BREVO_API_KEY` is not set. | Optional |
+| `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USERNAME`, `EMAIL_PASSWORD`, `EMAIL_FROM` | Classic SMTP settings, used only if neither `BREVO_API_KEY` nor `SENDGRID_API_KEY` is set. Only works on a host that allows outbound SMTP (most cloud PaaS hosts, Railway included, block it). | Optional |
 
 On Render/Railway/Fly.io these go in the service's "Environment" tab. Locally
 you can `export ADMIN_PASSWORD=...` before running, or use a `.env` file with
