@@ -252,6 +252,8 @@ def send_proposal_email(token):
         )
     except mailer.MailerNotConfigured as e:
         return jsonify({"error": str(e)}), 503
+    except mailer.MailerError as e:
+        return jsonify({"error": str(e)}), 502
     except Exception as e:
         return jsonify({"error": f"Could not send email: {e}"}), 502
 
