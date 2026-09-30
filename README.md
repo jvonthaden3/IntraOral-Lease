@@ -134,27 +134,18 @@ data/app.db                  SQLite database (created on first run)
 The equipment lease between the supplier and the lab (`lab_agreement.html`)
 is written to make the lab's **owner personally and individually liable**,
 not just the lab entity — the opposite of the doctor-facing lease, which
-explicitly disclaims personal liability. To do that it collects and prints:
+explicitly disclaims personal liability. To do that, it names the owner
+individually throughout the agreement text and signature block.
 
-- The owner's full legal name
-- The owner's home address
-- The owner's Social Security Number
-
-These are collected once, the first time a lab uses the calculator (see the
-"Lab owner" fields on `/`), and are **never shown again on any web page** —
-not the calculator, not the lab's own dashboard, not the proposal. The SSN
-is only ever rendered on the one generated document that legally needs it
-(`/p/<token>/lab-agreement`), and shows only as the last 4 digits anywhere
-else (the admin dashboard).
-
-That said: this still means a plaintext SSN sits in the SQLite database on
-whatever server this is deployed to. Before this holds real client data,
-seriously consider encrypting that column at rest (e.g., with a library like
-`cryptography`'s Fernet, keyed by an environment variable) or, better, using
-a dedicated e-signature platform (DocuSign, HelloSign, etc.) for the actual
-signing step instead of storing the SSN here at all — this app would still
-generate the agreement text, but the SSN capture and signature would happen
-on a platform built for that. Ask if you want either of those built out.
+Only the owner's full legal name is collected through the calculator (see
+the "Lab owner" field on `/`), so the agreement text can be personalized —
+it's stored with the lab's profile and never shown on any page other than
+the generated agreements. The owner's **home address and Social Security
+Number are never collected through the web form at all.** They appear only
+as blank fill-in lines in the signature block of the printed agreement
+(`/p/<token>/lab-agreement`), to be filled in by hand at the time of actual
+signing — nothing sensitive is typed into the app or stored in the
+database.
 
 ## Notes / things to fill in before using a generated agreement for real
 

@@ -4,10 +4,12 @@
 //
 // Section 1 (equipment cost / lab financing) is fixed, admin-configured
 // data injected by the server as window.LAB_SETTINGS -- there's nothing to
-// read from the DOM for it. Everything else recomputes only when the
-// "Update" button (section 2) or "Use this % below" button (section 3) is
-// clicked, not on every keystroke -- so numbers don't jump around while
-// someone is still typing.
+// read from the DOM for it. Section 2 (price to the doctor) only recomputes
+// when the "Update" button is clicked, so the doctor's payment doesn't jump
+// around while someone is still typing in that section. Sections 3, 4, and
+// 5 (spend, credit %, per-unit profitability) recompute automatically on
+// every change, since they only affect the schedule table below and should
+// "just work" without an extra click.
 
 function pmt(annualRate, termMonths, principal) {
   if (termMonths <= 0) return 0;
@@ -156,9 +158,16 @@ function render() {
 
 document.addEventListener('DOMContentLoaded', render);
 
-// The only things that trigger a recompute: the Update button (section 2)
-// and the "Use this % below" button (section 3) -- not every keystroke.
+// Section 2 (sell price, discount, doctor down/APR/term) only recomputes
+// when Update is clicked.
 document.getElementById('btn_update').addEventListener('click', render);
+
+// Sections 3, 4, and 5 recompute live, on every change -- no button needed.
+['estimated_invoice', 'credit_pct', 'low_threshold', 'unit_cost', 'unit_price'].forEach(id => {
+  const el = document.getElementById(id);
+  el.addEventListener('input', render);
+  el.addEventListener('change', render);
+});
 
 document.getElementById('btn_use_required_pct').addEventListener('click', () => {
   const inputs = gatherInputs();

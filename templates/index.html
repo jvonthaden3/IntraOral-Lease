@@ -30,9 +30,9 @@
   <div class="grid">
     <div class="field"><label>Owner's full legal name</label><input type="text" id="owner_name"></div>
   </div>
-  <div class="note">The equipment lease between {{ supplier.name }} and your lab holds you, the owner, personally
-  responsible &mdash; that's why it's signed in your name, not just the lab's. Your home address and Social Security
-  Number aren't collected here; you'll fill those in by hand directly on the lease agreement when you sign it.</div>
+  <div class="note">The equipment lease is between {{ supplier.name }} and you, as the lab owner &mdash; that's why
+  your legal name is requested, not just the lab's. Additional personal information will be requested as part of the
+  lease agreement signing.</div>
   <div class="note">First time here? Fill this in once. When you generate your first proposal below, we'll save your lab profile and
   give you a private link back to it &mdash; bookmark that link to see only your own proposals next time. No one else can see your work.</div>
   {% endif %}
@@ -40,9 +40,8 @@
 
 <div class="two-col">
   <div class="card">
-    <h2 style="margin-top:0">1. Your Cost</h2>
+    <h2 style="margin-top:0">1. Your Price</h2>
     <div class="result-row"><span class="label">Total Price to the Lab</span><span class="value" id="r_equipment_cost">{{ (settings.equipment_cost)|usd }}</span></div>
-    <div class="note">Set by {{ supplier.name }}. Contact them if you think this is wrong &mdash; it isn't something you edit here.</div>
   </div>
 
   <div class="card">
