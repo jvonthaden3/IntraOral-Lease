@@ -230,10 +230,12 @@ def send_proposal_email(token):
     proposal_url = url_for("view_proposal", token=token, _external=True)
     agreement_url = url_for("view_agreement", token=token, _external=True)
     lab_agreement_url = url_for("view_lab_agreement", token=token, _external=True)
+    brochure_url = url_for("static", filename="brochures/freedom-air-brochure.pdf", _external=True)
 
     html_body = render_template(
         "email_proposal.html", p=p, lab=lab,
         proposal_url=proposal_url, agreement_url=agreement_url, lab_agreement_url=lab_agreement_url,
+        brochure_url=brochure_url,
     )
     text_body = (
         f"Scanner lease proposal for {p['client_practice_name']} from {lab['name']}\n\n"
@@ -241,6 +243,7 @@ def send_proposal_email(token):
         f"Full proposal: {proposal_url}\n"
         f"Lease agreement: {agreement_url}\n"
         f"Equipment lease agreement: {lab_agreement_url}\n"
+        f"Scanner brochure: {brochure_url}\n"
     )
 
     try:
