@@ -27,6 +27,14 @@ def pct1_filter(value):
         return value
 
 
+@app.template_filter("mask_ssn")
+def mask_ssn_filter(value):
+    if not value:
+        return ""
+    digits = "".join(c for c in str(value) if c.isdigit())
+    return f"***-**-{digits[-4:]}" if len(digits) >= 4 else "***"
+
+
 def admin_required(view):
     @wraps(view)
     def wrapped(*args, **kwargs):
@@ -47,13 +55,21 @@ def admin_required(view):
 def index():
     lab_token = request.args.get("lab", "")
     lab = db.get_lab_by_token(lab_token) if lab_token else None
-    return render_template("index.html", lab=lab)
+    settings = db.get_settings()
+    lab_monthly_payment = calc.pmt(settings["lab_apr"], settings["lab_term"], settings["lab_financed"])
+    return render_template("index.html", lab=lab, settings=settings, lab_monthly_payment=lab_monthly_payment, supplier=config.SUPPLIER)
 
 
 @app.route("/api/calc", methods=["POST"])
 def api_calc():
     """Live calculation, used for the on-page preview before anything is saved."""
     inputs = request.get_json(force=True) or {}
+    settings = db.get_settings()
+    inputs["equipment_cost"] = settings["equipment_cost"]
+    inputs["lab_down_payment"] = settings["lab_down_payment"]
+    inputs["lab_apr"] = settings["lab_apr"]
+    inputs["lab_term"] = settings["lab_term"]
+    inputs["round_to"] = settings["round_to"]
     results = calc.compute(inputs)
     return jsonify(results)
 
@@ -69,8 +85,13 @@ def api_create_lab():
         email=data.get("email", "").strip(),
         phone=data.get("phone", "").strip(),
         address=data.get("address", "").strip(),
+        owner_name=data.get("owner_name", "").strip(),
+        owner_address=data.get("owner_address", "").strip(),
+        owner_ssn=data.get("owner_ssn", "").strip(),
     )
-    return jsonify(db.get_lab(lab_id)), 201
+    lab = db.get_lab(lab_id)
+    lab.pop("owner_ssn", None)  # never echo this back to the browser
+    return jsonify(lab), 201
 
 
 @app.route("/api/proposals", methods=["POST"])
@@ -85,6 +106,16 @@ def api_create_proposal():
         return jsonify({"error": "Missing or invalid lab session -- start from the calculator link again."}), 400
     if not client.get("practice_name"):
         return jsonify({"error": "Client practice name is required"}), 400
+
+    # Lab-side cost/financing terms are admin-configured, not client input --
+    # always pull the authoritative values server-side rather than trust
+    # whatever the browser sent for them.
+    settings = db.get_settings()
+    inputs["equipment_cost"] = settings["equipment_cost"]
+    inputs["lab_down_payment"] = settings["lab_down_payment"]
+    inputs["lab_apr"] = settings["lab_apr"]
+    inputs["lab_term"] = settings["lab_term"]
+    inputs["round_to"] = settings["round_to"]
 
     results = calc.compute(inputs)  # recompute server-side, never trust the client's numbers
     proposal_id = db.create_proposal(lab["id"], client, inputs, results)
@@ -218,6 +249,30 @@ def admin_dashboard():
     proposals = db.list_proposals(lab_id)
     labs = db.list_labs()
     return render_template("admin.html", proposals=proposals, labs=labs, selected_lab_id=lab_id)
+
+
+@app.route("/admin/settings", methods=["GET", "POST"])
+@admin_required
+def admin_settings():
+    saved = False
+    if request.method == "POST":
+        data = {
+            "c_scanner": float(request.form.get("c_scanner", 0) or 0),
+            "c_pc": float(request.form.get("c_pc", 0) or 0),
+            "c_cart": float(request.form.get("c_cart", 0) or 0),
+            "c_ship": float(request.form.get("c_ship", 0) or 0),
+            "c_train": float(request.form.get("c_train", 0) or 0),
+            "c_markup": float(request.form.get("c_markup", 0) or 0),
+            "lab_down_payment": float(request.form.get("lab_down_payment", 0) or 0),
+            "lab_apr": float(request.form.get("lab_apr", 0) or 0) / 100,
+            "lab_term": int(request.form.get("lab_term", 36) or 36),
+            "round_to": float(request.form.get("round_to", 5) or 5),
+        }
+        db.update_settings(data)
+        saved = True
+    settings = db.get_settings()
+    lab_monthly_payment = calc.pmt(settings["lab_apr"], settings["lab_term"], settings["lab_financed"])
+    return render_template("admin_settings.html", settings=settings, lab_monthly_payment=lab_monthly_payment, saved=saved)
 
 
 if __name__ == "__main__":

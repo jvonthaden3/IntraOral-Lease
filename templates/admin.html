@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% block title %}Admin &mdash; All Proposals{% endblock %}
-{% block nav %}<a href="/admin/logout">Log out</a>{% endblock %}
+{% block nav %}<a href="/admin/settings">Equipment &amp; Financing Settings</a><a href="/admin/logout">Log out</a>{% endblock %}
 {% block content %}
 <h1>All Proposals (Admin)</h1>
 <p class="subtitle">Every lab and every proposal, across the whole system. Labs themselves can't see this page.</p>
@@ -18,11 +18,12 @@
 <div class="card">
   <h2 style="margin-top:0">Labs</h2>
   <table>
-    <thead><tr><th>Name</th><th>Contact</th><th>Email</th><th>Phone</th><th>Created</th><th></th></tr></thead>
+    <thead><tr><th>Name</th><th>Owner</th><th>Contact</th><th>Email</th><th>Phone</th><th>Created</th><th></th></tr></thead>
     <tbody>
       {% for lab in labs %}
       <tr>
         <td>{{ lab.name }}</td>
+        <td>{{ lab.owner_name }}</td>
         <td>{{ lab.contact_name }}</td>
         <td>{{ lab.email }}</td>
         <td>{{ lab.phone }}</td>

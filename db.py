@@ -14,8 +14,25 @@ CREATE TABLE IF NOT EXISTS labs (
     email TEXT,
     phone TEXT,
     address TEXT,
+    owner_name TEXT,
+    owner_address TEXT,
+    owner_ssn TEXT,
     access_token TEXT UNIQUE,
     created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS settings (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    c_scanner REAL NOT NULL DEFAULT 7700,
+    c_pc REAL NOT NULL DEFAULT 2200,
+    c_cart REAL NOT NULL DEFAULT 350,
+    c_ship REAL NOT NULL DEFAULT 200,
+    c_train REAL NOT NULL DEFAULT 750,
+    c_markup REAL NOT NULL DEFAULT 1500,
+    lab_down_payment REAL NOT NULL DEFAULT 1270,
+    lab_apr REAL NOT NULL DEFAULT 0.085,
+    lab_term INTEGER NOT NULL DEFAULT 36,
+    round_to REAL NOT NULL DEFAULT 5
 );
 
 CREATE TABLE IF NOT EXISTS proposals (
@@ -53,25 +70,55 @@ def get_db():
     existing_proposal_cols = {r["name"] for r in conn.execute("PRAGMA table_info(proposals)")}
     if "token" not in existing_proposal_cols:
         conn.execute("ALTER TABLE proposals ADD COLUMN token TEXT")
+    for col in ("owner_name", "owner_address", "owner_ssn"):
+        if col not in existing_lab_cols:
+            conn.execute(f"ALTER TABLE labs ADD COLUMN {col} TEXT")
     # Backfill any rows that predate the token columns.
     for row in conn.execute("SELECT id FROM labs WHERE access_token IS NULL"):
         conn.execute("UPDATE labs SET access_token = ? WHERE id = ?", (_new_token(), row["id"]))
     for row in conn.execute("SELECT id FROM proposals WHERE token IS NULL"):
         conn.execute("UPDATE proposals SET token = ? WHERE id = ?", (_new_token(), row["id"]))
+    conn.execute("INSERT OR IGNORE INTO settings (id) VALUES (1)")
     conn.commit()
     return conn
+
+
+def get_settings():
+    conn = get_db()
+    row = conn.execute("SELECT * FROM settings WHERE id = 1").fetchone()
+    conn.close()
+    d = dict(row)
+    d["equipment_cost"] = d["c_scanner"] + d["c_pc"] + d["c_cart"] + d["c_ship"] + d["c_train"] + d["c_markup"]
+    d["lab_financed"] = max(0.0, d["equipment_cost"] - d["lab_down_payment"])
+    return d
+
+
+def update_settings(data):
+    conn = get_db()
+    fields = ["c_scanner", "c_pc", "c_cart", "c_ship", "c_train", "c_markup",
+              "lab_down_payment", "lab_apr", "lab_term", "round_to"]
+    values = [data[f] for f in fields]
+    conn.execute(
+        f"UPDATE settings SET {', '.join(f + ' = ?' for f in fields)} WHERE id = 1",
+        values,
+    )
+    conn.commit()
+    conn.close()
 
 
 def now():
     return datetime.now(timezone.utc).isoformat()
 
 
-def create_lab(name, contact_name="", email="", phone="", address=""):
+def create_lab(name, contact_name="", email="", phone="", address="",
+                owner_name="", owner_address="", owner_ssn=""):
     conn = get_db()
     token = _new_token()
     cur = conn.execute(
-        "INSERT INTO labs (name, contact_name, email, phone, address, access_token, created_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        (name, contact_name, email, phone, address, token, now()),
+        """INSERT INTO labs
+           (name, contact_name, email, phone, address, owner_name, owner_address, owner_ssn, access_token, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (name, contact_name, email, phone, address, owner_name, owner_address, owner_ssn, token, now()),
     )
     conn.commit()
     lab_id = cur.lastrowid

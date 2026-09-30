@@ -13,10 +13,13 @@
 
   <p>This Equipment Lease Agreement (&ldquo;Agreement&rdquo;) is made effective as of
   <span class="sig-line">&nbsp;</span>, 20__, by and between {{ supplier.name }}{% if supplier.address %}, of {{ supplier.address }}{% endif %}
-  (&ldquo;Supplier&rdquo;), and {{ lab.name }}{% if lab.address %}, of {{ lab.address }}{% endif %}
-  (&ldquo;Lab&rdquo;). Lab intends to make the Equipment available to its own customer,
-  {{ p.client_practice_name }}, under a separate agreement between Lab and that customer; this Agreement governs only the
-  relationship between Supplier and Lab.</p>
+  (&ldquo;Supplier&rdquo;), and {{ lab.owner_name or '[Owner Name]' }}, individually, as the owner of {{ lab.name }}{% if lab.address %},
+  located at {{ lab.address }}{% endif %} (collectively with {{ lab.name }}, &ldquo;Lab&rdquo;). Unlike a lease to one of Lab's own
+  customers, this Agreement is signed by {{ lab.owner_name or '[Owner Name]' }} in an individual capacity as well as on behalf of
+  {{ lab.name }}, and {{ lab.owner_name or '[Owner Name]' }} agrees to be personally and individually liable, jointly with
+  {{ lab.name }}, for all payment and other obligations of Lab under this Agreement. Lab intends to make the Equipment available
+  to its own customer, {{ p.client_practice_name }}, under a separate agreement between Lab and that customer; this Agreement
+  governs only the relationship between Supplier and Lab.</p>
 
   <h2>1. EQUIPMENT</h2>
   <p>Supplier agrees to lease to Lab one (1) intraoral scanner, one (1) computer/laptop, and related set-up and online
@@ -91,8 +94,10 @@
   <h2>13. SIGNATURES</h2>
   <p><strong>{{ supplier.name|upper }}:</strong></p>
   <p>By: <span class="sig-line">&nbsp;</span> &nbsp;&nbsp; Date: <span class="sig-line" style="min-width:140px;">&nbsp;</span></p>
-  <p style="margin-top:24px;"><strong>{{ lab.name|upper }}:</strong></p>
+  <p style="margin-top:24px;"><strong>{{ (lab.owner_name or '[OWNER NAME]')|upper }}, INDIVIDUALLY AND AS OWNER OF {{ lab.name|upper }}:</strong></p>
   <p>By: <span class="sig-line">&nbsp;</span> &nbsp;&nbsp; Date: <span class="sig-line" style="min-width:140px;">&nbsp;</span></p>
-  <p>Name / Title: <span class="sig-line">&nbsp;</span></p>
+  <p>Print Name: {{ lab.owner_name or '' }}<span class="sig-line">&nbsp;</span></p>
+  <p>Social Security Number: <span class="sig-line">&nbsp;</span></p>
+  <p>Home Address: <span class="sig-line">&nbsp;</span></p>
 </div>
 {% endblock %}

@@ -11,7 +11,7 @@ import os
 # each lab -- is a single entity, unlike labs and doctors which vary per
 # proposal. Edit these values (or set them as env vars) for your own business.
 SUPPLIER = {
-    "name": os.environ.get("SUPPLIER_NAME", "AMS Dental Technologies"),
+    "name": os.environ.get("SUPPLIER_NAME", "United Dental Resources Corporation"),
     "address": os.environ.get("SUPPLIER_ADDRESS", ""),
 }
 

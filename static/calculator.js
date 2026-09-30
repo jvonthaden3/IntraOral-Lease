@@ -1,6 +1,13 @@
 // Mirrors calc.py -- used for the live on-page preview. The server
 // recomputes everything from scratch when a proposal is actually saved,
 // so this copy only has to be good enough for instant feedback.
+//
+// Section 1 (equipment cost / lab financing) is fixed, admin-configured
+// data injected by the server as window.LAB_SETTINGS -- there's nothing to
+// read from the DOM for it. Everything else recomputes only when the
+// "Update" button (section 2) or "Use this % below" button (section 3) is
+// clicked, not on every keystroke -- so numbers don't jump around while
+// someone is still typing.
 
 function pmt(annualRate, termMonths, principal) {
   if (termMonths <= 0) return 0;
@@ -30,30 +37,23 @@ function num(id) {
 }
 
 function gatherInputs() {
-  const component_cost = num('c_scanner') + num('c_pc') + num('c_cart') + num('c_ship') + num('c_train');
-  const markup = num('c_markup');
-  const equipment_cost = component_cost + markup;
+  const s = window.LAB_SETTINGS;
   return {
-    component_cost: component_cost,
-    equipment_cost: equipment_cost,
-    lab_down_payment: equipment_cost - num('lab_financed_amt'),
-    lab_apr: num('lab_apr') / 100,
-    lab_term: num('lab_term'),
+    equipment_cost: s.equipment_cost,
+    lab_down_payment: s.lab_down_payment,
+    lab_apr: s.lab_apr,
+    lab_term: s.lab_term,
+    round_to: s.round_to,
     sell_price: num('sell_price'),
     discount: num('discount'),
     doctor_down_payment: num('doctor_down'),
     doctor_apr: num('doctor_apr') / 100,
     doctor_term: num('doctor_term'),
-    round_to: num('round_to'),
     credit_pct: num('credit_pct') / 100,
     low_threshold: num('low_threshold'),
     unit_cost: num('unit_cost'),
     unit_price: num('unit_price'),
     estimated_invoice: num('estimated_invoice'),
-    cost_components: {
-      scanner: num('c_scanner'), pc: num('c_pc'), cart: num('c_cart'),
-      shipping: num('c_ship'), training: num('c_train'), markup: markup
-    }
   };
 }
 
@@ -111,7 +111,7 @@ function compute(inputs) {
 
   return {
     lab: { equipment_cost: inputs.equipment_cost, financed: labFinanced, down_payment: inputs.lab_down_payment, monthly_payment: labPayment },
-    doctor: { discounted_price: discountedPrice, financed: doctorFinanced, monthly_payment: doctorPayment, total_over_term: totalOverTerm },
+    doctor: { discounted_price: discountedPrice, down_payment: inputs.doctor_down_payment, financed: doctorFinanced, monthly_payment: doctorPayment, total_over_term: totalOverTerm },
     margin: { sell_margin_pct: marginPct, monthly_spread: monthlySpread, total_margin_over_term: totalMargin },
     credit_program: { breakeven_spend: breakeven },
     schedule
@@ -120,15 +120,14 @@ function compute(inputs) {
 
 function render() {
   const inputs = gatherInputs();
-  document.getElementById('component_cost_display').value = fmtUSD(inputs.component_cost);
-  document.getElementById('equipment_cost_display').value = fmtUSD(inputs.equipment_cost);
-
   const r = compute(inputs);
 
   const requiredPct = inputs.estimated_invoice ? r.doctor.monthly_payment / inputs.estimated_invoice : null;
   document.getElementById('required_pct_display').value = requiredPct !== null ? fmtPct(Math.min(requiredPct, 1)) + (requiredPct > 1 ? ' (can\'t fully cover at this spend)' : '') : '–';
 
-  document.getElementById('r_equipment_cost').textContent = fmtUSD(r.lab.equipment_cost);
+  document.getElementById('r_doc_payment_inline').textContent = fmtUSD(r.doctor.monthly_payment) + ' /mo';
+
+  document.getElementById('r_equipment_cost2').textContent = fmtUSD(r.lab.equipment_cost);
   document.getElementById('r_lab_down').textContent = fmtUSD(r.lab.down_payment);
   document.getElementById('r_lab_payment').textContent = fmtUSD(r.lab.monthly_payment) + ' /mo';
   document.getElementById('r_margin_pct').textContent = fmtPct(r.margin.sell_margin_pct);
@@ -136,6 +135,7 @@ function render() {
   document.getElementById('r_total_margin').textContent = fmtUSD(r.margin.total_margin_over_term);
 
   document.getElementById('r_disc_price').textContent = fmtUSD(r.doctor.discounted_price);
+  document.getElementById('r_doc_down').textContent = fmtUSD(r.doctor.down_payment);
   document.getElementById('r_doc_financed').textContent = fmtUSD(r.doctor.financed);
   document.getElementById('r_doc_payment').textContent = fmtUSD(r.doctor.monthly_payment) + ' /mo';
   document.getElementById('r_doc_total').textContent = fmtUSD(r.doctor.total_over_term);
@@ -154,11 +154,12 @@ function render() {
   });
 }
 
-document.addEventListener('input', render);
 document.addEventListener('DOMContentLoaded', render);
 
-// "Use this % below" -- copies the required % (to fully cover the estimated
-// spend) into the credit_pct field the lab actually offers.
+// The only things that trigger a recompute: the Update button (section 2)
+// and the "Use this % below" button (section 3) -- not every keystroke.
+document.getElementById('btn_update').addEventListener('click', render);
+
 document.getElementById('btn_use_required_pct').addEventListener('click', () => {
   const inputs = gatherInputs();
   const r = compute(inputs);
@@ -198,6 +199,7 @@ document.getElementById('btn_generate').addEventListener('click', async () => {
         errEl.style.display = '';
         return;
       }
+      const ownerNameEl = document.getElementById('owner_name');
       const labResp = await fetch('/api/labs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -207,6 +209,7 @@ document.getElementById('btn_generate').addEventListener('click', async () => {
           email: document.getElementById('lab_email').value.trim(),
           phone: document.getElementById('lab_phone').value.trim(),
           address: document.getElementById('lab_address').value.trim(),
+          owner_name: ownerNameEl ? ownerNameEl.value.trim() : '',
         }),
       });
       if (!labResp.ok) throw new Error((await labResp.json()).error || 'Could not save lab profile');

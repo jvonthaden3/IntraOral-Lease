@@ -53,7 +53,7 @@
     <tr><th>Total over full lease term</th><td>{{ (p.results.doctor.total_over_term)|usd }}</td></tr>
   </table>
 
-  <h2>Monthly Usage Credit</h2>
+  <h2>Monthly Doctor Invoice Credit</h2>
   <p>
     Each month, {{ lab.name }} will credit
     <strong>{{ (p.inputs.get('credit_pct', 0))|pct1 }}</strong>

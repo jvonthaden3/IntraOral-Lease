@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Admin &mdash; Equipment & Financing Settings{% endblock %}
+{% block nav %}<a href="/admin">All Proposals</a><a href="/admin/logout">Log out</a>{% endblock %}
+{% block content %}
+<h1>Equipment &amp; Financing Settings</h1>
+<p class="subtitle">These figures are the same for every lab and every proposal. They drive the "Your Cost" section every
+lab sees on the public calculator, and lock in automatically whenever a proposal is generated.</p>
+
+{% if saved %}<div class="card" style="background:#eafaf1; border-color:#bfe6cf;">Saved.</div>{% endif %}
+
+<form method="post">
+  <div class="card">
+    <h2 style="margin-top:0">Equipment cost</h2>
+    <div class="grid">
+      <div class="field"><label>Scanner ($)</label><input type="number" name="c_scanner" value="{{ settings.c_scanner }}"></div>
+      <div class="field"><label>PC / laptop ($)</label><input type="number" name="c_pc" value="{{ settings.c_pc }}"></div>
+      <div class="field"><label>Cart ($)</label><input type="number" name="c_cart" value="{{ settings.c_cart }}"></div>
+      <div class="field"><label>Shipping ($)</label><input type="number" name="c_ship" value="{{ settings.c_ship }}"></div>
+      <div class="field"><label>Training ($)</label><input type="number" name="c_train" value="{{ settings.c_train }}"></div>
+      <div class="field"><label>Supplier markup ($)</label><input type="number" name="c_markup" value="{{ settings.c_markup }}"></div>
+    </div>
+    <div class="note">Total cost to the lab = the sum of everything above. Currently {{ (settings.equipment_cost)|usd }}.</div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">Lab financing</h2>
+    <div class="grid">
+      <div class="field"><label>Lab's down payment ($)</label><input type="number" name="lab_down_payment" value="{{ settings.lab_down_payment }}"></div>
+      <div class="field"><label>Lab's APR (%)</label><input type="number" step="0.01" name="lab_apr" value="{{ settings.lab_apr * 100 }}"></div>
+      <div class="field"><label>Term (months)</label><input type="number" name="lab_term" value="{{ settings.lab_term }}"></div>
+    </div>
+    <div class="note">
+      Amount financed = total cost &minus; down payment = currently {{ (settings.lab_financed)|usd }}.<br>
+      Estimated monthly payment at these terms: <strong>{{ (lab_monthly_payment)|usd }}</strong>.
+      This is what shows on the public calculator (the interest rate itself is never shown there).
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">Doctor lease default</h2>
+    <div class="grid">
+      <div class="field"><label>Round doctor's payment to nearest ($)</label><input type="number" name="round_to" value="{{ settings.round_to }}"></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn accent" type="submit">Save Settings</button>
+  </div>
+</form>
+{% endblock %}

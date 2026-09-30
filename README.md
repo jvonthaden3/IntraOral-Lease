@@ -25,32 +25,39 @@ a local database so labs can come back to it.
 
 ## What it does
 
-1. **Your cost** — enter the scanner/PC/cart/shipping/training cost breakdown
-   plus any supplier markup, and your own financing terms; it computes your
-   monthly payment.
+1. **Your cost** — a read-only summary (Total Cost, Down Payment, Amount
+   Financed, Term, Estimated Monthly Payment). These numbers are the same
+   for every lab and every proposal, set once by the admin (see below) — a
+   lab can't edit them, and the interest rate itself is never shown, only
+   the resulting payment.
 2. **Price to the doctor** — set the sell price, a sign-up discount, the
-   doctor's down payment, rate and term; it computes their monthly lease
-   payment (rounded to the nearest $5 by default).
+   doctor's down payment, rate and term, then click **Update** to compute
+   their monthly lease payment (rounded to the nearest $5 by default). It
+   only recalculates when you click Update, not on every keystroke.
 3. **Doctor's estimated spend** — enter what the doctor is expected to spend
    monthly, and see the % of that spend needed to fully cover their lease
    payment, with a button to use that % below.
-4. **Monthly usage credit** — set what % of the doctor's monthly bill gets
-   credited toward their lease payment, and the "no credit below this"
-   threshold. It works out the break-even spend level (where the doctor owes
-   $0) and a full schedule of bill levels vs. what's owed.
-5. **Per-case profitability** (optional) — your cost/price per unit, to show
-   profit and net margin at each bill level.
+4. **Monthly doctor invoice credit** — set what % of the doctor's monthly
+   bill gets credited toward their lease payment, and the "no credit below
+   this" threshold. Works out the break-even spend level (where the doctor
+   owes $0) and a full schedule of bill levels vs. what's owed.
+5. **Per unit profitability** (optional) — your cost/price per unit to this
+   doctor, to show profit and net margin at each bill level.
 6. **Generate a proposal and both lease agreements** — enter the client's
    info and it saves everything, then gives you: a printable proposal, a
    lease agreement between the lab and the doctor, and a lease agreement
-   between the equipment supplier and the lab (mirroring the lab's own
-   financing terms) — all print-to-PDF from the browser.
+   between the equipment supplier and the lab's owner personally (see
+   "Personal liability on the lab-supplier lease" below) — all
+   print-to-PDF from the browser.
 7. **Email it** — from the proposal page, send yourself (or the doctor) an
    email with a spec-sheet summary and links to all three documents. Requires
    SMTP settings (see below) — without them the button shows a clear error
    instead of silently failing.
 8. **Admin dashboard** (`/admin`) — every lab and every proposal, password
-   gated.
+   gated. **Admin → Equipment & Financing Settings** is where the numbers in
+   item 1 above are set (equipment cost components, supplier markup, the
+   lab's own down payment/rate/term) — change them there and every lab's
+   calculator picks up the new figures immediately.
 
 The math lives in one place (`calc.py`) and is mirrored in
 `static/calculator.js` for the live on-page preview, but whatever gets saved
@@ -121,6 +128,33 @@ static/
   style.css
 data/app.db                  SQLite database (created on first run)
 ```
+
+## Personal liability on the lab-supplier lease
+
+The equipment lease between the supplier and the lab (`lab_agreement.html`)
+is written to make the lab's **owner personally and individually liable**,
+not just the lab entity — the opposite of the doctor-facing lease, which
+explicitly disclaims personal liability. To do that it collects and prints:
+
+- The owner's full legal name
+- The owner's home address
+- The owner's Social Security Number
+
+These are collected once, the first time a lab uses the calculator (see the
+"Lab owner" fields on `/`), and are **never shown again on any web page** —
+not the calculator, not the lab's own dashboard, not the proposal. The SSN
+is only ever rendered on the one generated document that legally needs it
+(`/p/<token>/lab-agreement`), and shows only as the last 4 digits anywhere
+else (the admin dashboard).
+
+That said: this still means a plaintext SSN sits in the SQLite database on
+whatever server this is deployed to. Before this holds real client data,
+seriously consider encrypting that column at rest (e.g., with a library like
+`cryptography`'s Fernet, keyed by an environment variable) or, better, using
+a dedicated e-signature platform (DocuSign, HelloSign, etc.) for the actual
+signing step instead of storing the SSN here at all — this app would still
+generate the agreement text, but the SSN capture and signature would happen
+on a platform built for that. Ask if you want either of those built out.
 
 ## Notes / things to fill in before using a generated agreement for real
 
