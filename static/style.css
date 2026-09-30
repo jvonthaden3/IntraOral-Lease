@@ -1,0 +1,145 @@
+:root {
+  --navy: #12324f;
+  --navy-light: #1d4d78;
+  --accent: #2e8b6b;
+  --bg: #f5f7f9;
+  --card: #ffffff;
+  --border: #dfe4e8;
+  --text: #1c2733;
+  --muted: #5b6b78;
+  --yellow: #fff6d8;
+  --danger: #b3402a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  margin: 0;
+  line-height: 1.45;
+}
+
+header.topbar {
+  background: var(--navy);
+  color: white;
+  padding: 14px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+header.topbar a { color: white; text-decoration: none; font-weight: 600; }
+header.topbar nav a { margin-left: 18px; font-weight: 400; opacity: 0.9; }
+header.topbar nav a:hover { opacity: 1; text-decoration: underline; }
+
+main.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+h1 { font-size: 22px; margin: 0 0 4px; }
+h2 { font-size: 17px; margin: 28px 0 10px; color: var(--navy); border-bottom: 2px solid var(--border); padding-bottom: 6px; }
+h3 { font-size: 14px; margin: 16px 0 8px; color: var(--navy-light); }
+p.subtitle { color: var(--muted); margin-top: 0; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 18px 20px;
+  margin-bottom: 18px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px 20px;
+}
+
+label {
+  display: block;
+  font-size: 12.5px;
+  color: var(--muted);
+  margin-bottom: 3px;
+  font-weight: 600;
+}
+
+input[type=text], input[type=number], input[type=email], input[type=tel], select, textarea {
+  width: 100%;
+  padding: 7px 9px;
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-size: 14px;
+  background: var(--yellow);
+}
+textarea { resize: vertical; }
+
+.field { margin-bottom: 10px; }
+.field.readonly input { background: #eef2f5; color: var(--muted); }
+
+.two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+@media (max-width: 780px) { .two-col { grid-template-columns: 1fr; } }
+
+table { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+th, td { padding: 7px 10px; border-bottom: 1px solid var(--border); text-align: right; }
+th:first-child, td:first-child { text-align: left; }
+thead th { background: #eef2f5; color: var(--navy); font-size: 12px; text-transform: uppercase; letter-spacing: .02em; }
+tr.highlight td { background: #eafaf1; font-weight: 600; }
+
+.result-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px dashed var(--border); font-size: 14px; }
+.result-row .label { color: var(--muted); }
+.result-row .value { font-weight: 600; }
+.result-row.big .value { font-size: 20px; color: var(--navy); }
+
+.btn {
+  display: inline-block;
+  background: var(--navy);
+  color: white;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  text-decoration: none;
+  font-weight: 600;
+}
+.btn:hover { background: var(--navy-light); }
+.btn.secondary { background: white; color: var(--navy); border: 1px solid var(--navy); }
+.btn.accent { background: var(--accent); }
+.btn.small { padding: 5px 10px; font-size: 12.5px; }
+
+.badge { display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11.5px; font-weight: 700; text-transform: uppercase; }
+.badge.draft { background: #ecebe4; color: #7a6f3d; }
+.badge.sent { background: #dbe9f7; color: #1d5a94; }
+.badge.signed { background: #dcf1e6; color: #1d7a4e; }
+
+.note { font-size: 12.5px; color: var(--muted); margin-top: 4px; }
+.error { color: var(--danger); font-size: 13px; margin-top: 6px; }
+
+.actions { margin-top: 16px; display: flex; gap: 10px; flex-wrap: wrap; }
+
+.doc {
+  background: white;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 50px 60px;
+  font-family: Georgia, "Times New Roman", serif;
+  color: #1a1a1a;
+  line-height: 1.5;
+}
+.doc h1 { text-align: center; font-size: 20px; margin-bottom: 2px; }
+.doc .doc-sub { text-align: center; font-weight: bold; margin-bottom: 20px; }
+.doc h2 { font-size: 14px; border: none; padding: 0; margin: 18px 0 6px; }
+.doc p { margin: 0 0 10px; text-align: justify; }
+.doc .sig-line { border-bottom: 1px solid #333; display: inline-block; min-width: 260px; }
+.doc table { margin: 10px 0; }
+.doc table th, .doc table td { border: 1px solid #999; padding: 6px 8px; }
+.doc .no-print { text-align: center; margin-bottom: 24px; }
+
+@media print {
+  .no-print { display: none !important; }
+  body { background: white; }
+  .doc { padding: 0; }
+}

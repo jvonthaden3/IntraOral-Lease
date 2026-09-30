@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{{ lab.name }} &mdash; Your Proposals{% endblock %}
+{% block nav %}<a href="/?lab={{ lab.access_token }}">+ New Proposal</a>{% endblock %}
+{% block content %}
+<h1>{{ lab.name }}</h1>
+<p class="subtitle">Your saved proposals. This page is private to your lab &mdash; no one else can see it unless you share this link.</p>
+
+<div class="card">
+  {% if proposals %}
+  <table>
+    <thead>
+      <tr><th>#</th><th>Client / Practice</th><th>Doctor</th><th>Monthly Payment</th><th>Status</th><th>Created</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for p in proposals %}
+      <tr>
+        <td>{{ loop.revindex }}</td>
+        <td>{{ p.client_practice_name }}</td>
+        <td>{{ p.client_doctor_name }}</td>
+        <td>{{ (p.results.doctor.monthly_payment)|usd }}</td>
+        <td><span class="badge {{ p.status }}">{{ p.status }}</span></td>
+        <td>{{ p.created_at[:10] }}</td>
+        <td>
+          <a href="/p/{{ p.token }}" class="btn small secondary">Proposal</a>
+          <a href="/p/{{ p.token }}/agreement" class="btn small secondary">Doctor Agreement</a>
+          <a href="/p/{{ p.token }}/lab-agreement" class="btn small secondary">Lab Agreement</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No proposals yet. <a href="/?lab={{ lab.access_token }}">Build one.</a></p>
+  {% endif %}
+</div>
+
+<div class="note">Bookmark this page's link to come back here: <code>{{ request.url }}</code></div>
+{% endblock %}

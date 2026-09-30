@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+{% block title %}Lease Agreement #{{ p.id }}{% endblock %}
+{% block content %}
+<div class="doc">
+  <div class="no-print">
+    <a href="/p/{{ p.token }}" class="btn secondary small">&larr; Back to proposal</a>
+    <a href="/p/{{ p.token }}/lab-agreement" class="btn small secondary">View Lab Lease Agreement</a>
+    <button class="btn accent small" onclick="window.print()">Print / Save as PDF</button>
+  </div>
+
+  <h1>SCANNER LEASE AGREEMENT</h1>
+  <div class="doc-sub">{{ lab.name }}</div>
+
+  <p>This Scanner Lease Agreement (&ldquo;Agreement&rdquo;) is made effective as of
+  <span class="sig-line">&nbsp;</span>, 20__, by and between {{ lab.name }}{% if lab.address %}, of {{ lab.address }}{% endif %}
+  (&ldquo;Lab&rdquo;), and {{ p.client_practice_name }}{% if p.client_address %}, a dental practice with offices at {{ p.client_address }}{% endif %}
+  (&ldquo;Customer&rdquo;). This Agreement is signed on Customer's behalf by its authorized representative
+  in that capacity only; it does not create any personal guaranty or personal liability for the individual signing below.</p>
+
+  <h2>1. EQUIPMENT</h2>
+  <p>Lab agrees to lease to Customer one (1) intraoral scanner, one (1) computer/laptop, and related set-up and online training (collectively, the &ldquo;Equipment&rdquo;).</p>
+
+  <h2>2. PRICE AND DISCOUNT</h2>
+  <p>The standard price for the Equipment is {{ (p.results.doctor.discounted_price + p.inputs.get('discount', 0))|usd }}.
+  In consideration of Customer's commitment to this Agreement and a down payment of {{ (p.inputs.get('doctor_down_payment', 0))|usd }},
+  Lab will reduce the price by {{ (p.inputs.get('discount', 0))|usd }}, for a total of
+  <strong>{{ (p.results.doctor.discounted_price)|usd }}</strong> (the &ldquo;Adjusted Price&rdquo;),
+  which is the basis for the Lease Payment calculated below.</p>
+
+  <h2>3. LEASE PAYMENTS</h2>
+  <p>Customer shall pay Lab a down payment of {{ (p.inputs.get('doctor_down_payment', 0))|usd }} upon execution of this Agreement.
+  The remaining {{ (p.results.doctor.financed)|usd }} is amortized over {{ p.inputs.get('doctor_term', 0)|int }} months at Lab's
+  then-effective lease rate, resulting in a monthly payment of <strong>{{ (p.results.doctor.monthly_payment)|usd }}</strong>
+  (the &ldquo;Lease Payment&rdquo;), due on the same day of each month as the down payment, beginning thirty (30) days after
+  delivery and installation of the Equipment, and subject to the monthly credit in Section 4 below.</p>
+
+  <h2>4. MONTHLY USAGE CREDIT</h2>
+  <p>Each month, Lab will apply {{ (p.inputs.get('credit_pct', 0))|pct1 }} of Customer's total monthly invoice
+  toward that month's Lease Payment, as follows. Customer is not required to send any minimum amount or exclusive share of its
+  business to Lab &mdash; this credit simply applies to whatever Lab bills Customer that month:</p>
+  <p>
+    (a) Invoices of {{ (p.inputs.get('low_threshold', 0))|usd }} or less: no credit applies; the full
+    {{ (p.results.doctor.monthly_payment)|usd }} Lease Payment is due.<br>
+    (b) Invoices greater than {{ (p.inputs.get('low_threshold', 0))|usd }}
+    {% if p.results.credit_program.breakeven_spend %}and up to {{ (p.results.credit_program.breakeven_spend)|usd }}{% endif %}:
+    Customer owes the Lease Payment less {{ (p.inputs.get('credit_pct', 0))|pct1 }} of that month's invoice.<br>
+    {% if p.results.credit_program.breakeven_spend %}
+    (c) Invoices greater than {{ (p.results.credit_program.breakeven_spend)|usd }}: no Lease Payment is due for that month.
+    {% endif %}
+  </p>
+  <p>Any amount owed after the credit is applied shall be paid together with that month's invoice.</p>
+
+  <h2>5. OWNERSHIP</h2>
+  <p>The Equipment is leased, not sold. Lab retains sole ownership and title to the Equipment at all times during this Agreement.
+  Customer shall not sell, encumber, sublease, or permit a lien against the Equipment, and bears the risk of loss for the Equipment
+  at Customer's practice location, ordinary wear and tear excepted.</p>
+
+  <h2>6. EQUIPMENT LOCATION</h2>
+  <p>Customer shall keep the Equipment at the practice location identified above throughout the term of this Agreement and shall
+  not relocate the Equipment without Lab's prior written consent.</p>
+
+  <h2>7. CANCELLATION</h2>
+  <p>Customer may cancel this Agreement at any time upon thirty (30) days' written notice to Lab. Upon cancellation, Customer
+  shall (a) return the Equipment to Lab at Customer's own expense within that notice period, (b) pay the Lease Payment due for
+  that final thirty (30) day notice period ({{ (p.results.doctor.monthly_payment)|usd }}), and (c) pay an early termination fee
+  equal to one-half (1/2) of one Lease Payment ({{ (p.results.doctor.monthly_payment * 0.5)|usd }}). Cancellation does not
+  relieve Customer of any other Lease Payments or invoice balances already due through the notice period.</p>
+
+  <h2>8. END OF LEASE TERM</h2>
+  <p>At the end of the Lease term, Lab will determine, in its sole discretion, how to proceed with Customer. Lab's options
+  include, without limitation: (a) allowing Customer to buy out the Equipment for a fee equal to one (1) Lease Payment
+  ({{ (p.results.doctor.monthly_payment)|usd }}); (b) offering Customer an upgrade to then-current equipment at the price
+  Lab quotes at that time; or (c) continuing the lease on a month-to-month basis at the then-current Lease Payment. Lab will
+  notify Customer of its determination before the end of the Lease term.</p>
+
+  <h2>9. DELIVERY AND TRAINING</h2>
+  <p>Lab will deliver, install, and provide online training on the Equipment at Customer's practice location within a mutually
+  agreed timeframe following execution of this Agreement.</p>
+
+  <h2>10. DEFAULT AND REMEDIES</h2>
+  <p>Each of the following is a material default: (a) failure to make any Lease Payment when due &mdash; a single missed
+  payment is sufficient; (b) relocating the Equipment without Lab's consent; or (c) Customer's insolvency or bankruptcy.
+  Lab shall give Customer written notice of any default and five (5) days to cure it. If the default is not cured, Lab may
+  terminate this Agreement and repossess the Equipment, in addition to any other remedy available at law.</p>
+
+  <h2>11. WARRANTIES; LIMITATION OF LIABILITY</h2>
+  <p>Lab warrants the Equipment will be free of substantive defects in material and workmanship for one (1) year from delivery.
+  LAB SHALL NOT BE LIABLE FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES OF ANY NATURE, EVEN IF ADVISED OF THE
+  POSSIBILITY OF SUCH DAMAGES.</p>
+
+  <h2>12. DISPUTE RESOLUTION; GOVERNING LAW</h2>
+  <p>Any dispute arising out of or relating to this Agreement shall be resolved by binding arbitration under the rules of the
+  American Arbitration Association. This Agreement is governed by the laws of the State of
+  Illinois, without regard to its conflicts of law principles.</p>
+
+  <h2>13. MISCELLANEOUS</h2>
+  <p>This Agreement, including any attached quotation, is the entire agreement between the parties regarding its subject
+  matter and supersedes all prior discussions or agreements on that subject. It may be amended only by a writing signed by
+  both parties. If any provision is held invalid or unenforceable, the remaining provisions remain in full force and effect.
+  A party's failure to enforce any provision is not a waiver of its right to do so later.</p>
+
+  <h2>14. SIGNATURES</h2>
+  <p><strong>{{ lab.name|upper }}:</strong></p>
+  <p>By: <span class="sig-line">&nbsp;</span> &nbsp;&nbsp; Date: <span class="sig-line" style="min-width:140px;">&nbsp;</span></p>
+  <p style="margin-top:24px;"><strong>CUSTOMER (practice entity, by its authorized representative &mdash; no personal guaranty):</strong></p>
+  <p>By: <span class="sig-line">&nbsp;</span> &nbsp;&nbsp; Date: <span class="sig-line" style="min-width:140px;">&nbsp;</span></p>
+  <p>Name / Title: <span class="sig-line">&nbsp;</span></p>
+  <p>Practice Name: {{ p.client_practice_name }}</p>
+  <p>Practice Address: {{ p.client_address or '' }}<span class="sig-line" style="min-width:200px;">&nbsp;</span></p>
+</div>
+{% endblock %}

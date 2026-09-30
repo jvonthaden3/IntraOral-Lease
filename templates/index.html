@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+{% block title %}Scanner Lease Calculator{% endblock %}
+{% block content %}
+<h1>Scanner Lease &amp; Proposal Calculator</h1>
+<p class="subtitle">Work out what it costs you to finance or lease the scanner, what to charge your doctor, and how much of their monthly bill to credit toward their payment &mdash; then generate a proposal and lease agreement.</p>
+
+<div class="card">
+  <h2 style="margin-top:0">Your Lab</h2>
+  {% if lab %}
+  <input type="hidden" id="lab_token" value="{{ lab.access_token }}">
+  <div class="grid">
+    <div class="field"><label>Lab name</label><input type="text" id="lab_name" value="{{ lab.name }}" readonly></div>
+    <div class="field"><label>Contact name</label><input type="text" id="lab_contact" value="{{ lab.contact_name or '' }}" readonly></div>
+    <div class="field"><label>Email</label><input type="email" id="lab_email" value="{{ lab.email or '' }}" readonly></div>
+    <div class="field"><label>Phone</label><input type="tel" id="lab_phone" value="{{ lab.phone or '' }}" readonly></div>
+    <div class="field" style="grid-column: 1 / -1;"><label>Address</label><input type="text" id="lab_address" value="{{ lab.address or '' }}" readonly></div>
+  </div>
+  <div class="note">You're working as <strong>{{ lab.name }}</strong>, from your saved lab link. Every proposal you generate here is
+  private to your lab &mdash; only you can see it. Not your lab? <a href="/">Start fresh</a>.</div>
+  {% else %}
+  <input type="hidden" id="lab_token" value="">
+  <div class="grid">
+    <div class="field"><label>Lab name</label><input type="text" id="lab_name" placeholder="Acme Dental Lab"></div>
+    <div class="field"><label>Contact name</label><input type="text" id="lab_contact"></div>
+    <div class="field"><label>Email</label><input type="email" id="lab_email"></div>
+    <div class="field"><label>Phone</label><input type="tel" id="lab_phone"></div>
+    <div class="field" style="grid-column: 1 / -1;"><label>Address</label><input type="text" id="lab_address"></div>
+  </div>
+  <div class="note">First time here? Fill this in once. When you generate your first proposal below, we'll save your lab profile and
+  give you a private link back to it &mdash; bookmark that link to see only your own proposals next time. No one else can see your work.</div>
+  {% endif %}
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <h2 style="margin-top:0">1. Your Cost (Lab Financing)</h2>
+    <h3>Equipment cost</h3>
+    <div class="grid">
+      <div class="field"><label>Scanner</label><input type="number" id="c_scanner" value="7700"></div>
+      <div class="field"><label>PC / laptop</label><input type="number" id="c_pc" value="2200"></div>
+      <div class="field"><label>Cart</label><input type="number" id="c_cart" value="350"></div>
+      <div class="field"><label>Shipping</label><input type="number" id="c_ship" value="200"></div>
+      <div class="field"><label>Training</label><input type="number" id="c_train" value="750"></div>
+    </div>
+    <div class="field readonly"><label>Component cost subtotal</label><input type="text" id="component_cost_display" readonly></div>
+
+    <h3>Supplier markup</h3>
+    <div class="grid">
+      <div class="field"><label>Markup added by your supplier ($)</label><input type="number" id="c_markup" value="1500"></div>
+    </div>
+    <div class="field readonly"><label>Your total cost (financing basis)</label><input type="text" id="equipment_cost_display" readonly></div>
+    <div class="note">If your supplier sells you the package at a marked-up price rather than raw component cost, enter the markup here. Your total cost is what you actually finance below.</div>
+
+    <h3>Your financing</h3>
+    <div class="grid">
+      <div class="field"><label>Amount you finance ($)</label><input type="number" id="lab_financed_amt" value="11430"></div>
+      <div class="field"><label>Your APR (%)</label><input type="number" step="0.01" id="lab_apr" value="8.5"></div>
+      <div class="field"><label>Term (months)</label><input type="number" id="lab_term" value="36"></div>
+    </div>
+    <div class="note">Down payment = total cost &minus; amount financed. Adjust the amount financed above to change it.</div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">2. Price to Your Doctor (Lease)</h2>
+    <div class="grid">
+      <div class="field"><label>Sell price to doctor ($)</label><input type="number" id="sell_price" value="15000"></div>
+      <div class="field"><label>Discount for signing ($)</label><input type="number" id="discount" value="0"></div>
+      <div class="field"><label>Doctor down payment ($)</label><input type="number" id="doctor_down" value="1500"></div>
+      <div class="field"><label>Doctor APR (%)</label><input type="number" step="0.001" id="doctor_apr" value="8.5"></div>
+      <div class="field"><label>Lease term (months)</label><input type="number" id="doctor_term" value="40"></div>
+      <div class="field"><label>Round payment to nearest ($)</label><input type="number" id="round_to" value="5"></div>
+    </div>
+  </div>
+</div>
+
+<div class="two-col">
+  <div class="card">
+    <h2 style="margin-top:0">3. Doctor's Estimated Spend</h2>
+    <div class="grid">
+      <div class="field"><label>Doctor's estimated monthly invoice ($)</label><input type="number" id="estimated_invoice" value="3000"></div>
+      <div class="field readonly"><label>% needed to fully cover the lease payment</label><input type="text" id="required_pct_display" readonly></div>
+    </div>
+    <div class="actions" style="margin-top:8px;">
+      <button type="button" class="btn secondary small" id="btn_use_required_pct">Use this % below</button>
+    </div>
+    <div class="note">Estimate what the doctor spends with you per month, and this shows the credit % that would bring their payment to $0 at that spend level. Then pick your own % in section 4 &mdash; it doesn't have to match exactly.</div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin-top:0">4. Monthly Usage Credit</h2>
+    <div class="grid">
+      <div class="field"><label>% of monthly bill credited to lease payment</label><input type="number" step="0.1" id="credit_pct" value="14"></div>
+      <div class="field"><label>No credit below this invoice ($)</label><input type="number" id="low_threshold" value="500"></div>
+    </div>
+    <div class="note">Below the threshold, the doctor owes the full lease payment. Between the threshold and the break-even spend, the credit is prorated. At or above break-even, nothing is due.</div>
+  </div>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0">5. Per-Case Profitability <span style="font-weight:400;color:var(--muted);font-size:12px;">(optional)</span></h2>
+  <div class="grid">
+    <div class="field"><label>Your cost per unit ($)</label><input type="number" step="0.01" id="unit_cost" value="35"></div>
+    <div class="field"><label>Price to doctor per unit ($)</label><input type="number" step="0.01" id="unit_price" value="80"></div>
+  </div>
+  <div class="note">Fills in the Profit / Net Profit / Net Margin columns in the schedule below.</div>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0">Results</h2>
+  <div class="two-col">
+    <div>
+      <h3>Your cost</h3>
+      <div class="result-row"><span class="label">Total equipment cost</span><span class="value" id="r_equipment_cost">&ndash;</span></div>
+      <div class="result-row"><span class="label">Your down payment / cash outlay</span><span class="value" id="r_lab_down">&ndash;</span></div>
+      <div class="result-row big"><span class="label">Your monthly payment</span><span class="value" id="r_lab_payment">&ndash;</span></div>
+      <h3>Margin</h3>
+      <div class="result-row"><span class="label">Sell price margin</span><span class="value" id="r_margin_pct">&ndash;</span></div>
+      <div class="result-row"><span class="label">Monthly spread (doctor &minus; your payment)</span><span class="value" id="r_spread">&ndash;</span></div>
+      <div class="result-row"><span class="label">Total margin over full term</span><span class="value" id="r_total_margin">&ndash;</span></div>
+    </div>
+    <div>
+      <h3>Doctor's lease</h3>
+      <div class="result-row"><span class="label">Discounted price</span><span class="value" id="r_disc_price">&ndash;</span></div>
+      <div class="result-row"><span class="label">Amount financed</span><span class="value" id="r_doc_financed">&ndash;</span></div>
+      <div class="result-row big"><span class="label">Doctor's monthly lease payment</span><span class="value" id="r_doc_payment">&ndash;</span></div>
+      <div class="result-row"><span class="label">Total over full lease term</span><span class="value" id="r_doc_total">&ndash;</span></div>
+      <h3>Credit program</h3>
+      <div class="result-row big"><span class="label">Break-even monthly spend ($0 due)</span><span class="value" id="r_breakeven">&ndash;</span></div>
+    </div>
+  </div>
+
+  <h3>Monthly bill vs. what the doctor owes</h3>
+  <table id="schedule_table">
+    <thead><tr><th>Monthly Bill</th><th>Credit Applied</th><th>Doctor Owes</th><th>Profit</th><th>Net Profit</th><th>Net Margin</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0">Generate Proposal &amp; Agreement</h2>
+  <div class="grid">
+    <div class="field"><label>Practice name</label><input type="text" id="cl_practice"></div>
+    <div class="field"><label>Doctor name</label><input type="text" id="cl_doctor"></div>
+    <div class="field"><label>Email</label><input type="email" id="cl_email"></div>
+    <div class="field"><label>Phone</label><input type="tel" id="cl_phone"></div>
+    <div class="field" style="grid-column: 1 / -1;"><label>Practice address</label><input type="text" id="cl_address"></div>
+  </div>
+  <div class="actions">
+    <button class="btn accent" id="btn_generate">Save &amp; Generate Proposal</button>
+  </div>
+  <div class="error" id="err" style="display:none;"></div>
+</div>
+
+<script src="/static/calculator.js"></script>
+{% endblock %}

@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head><meta charset="utf-8"></head>
+<body style="font-family: Georgia, 'Times New Roman', serif; color:#1a1a1a; max-width:600px; margin:0 auto; padding:20px;">
+  <h2 style="color:#12324f;">Scanner Lease Proposal for {{ p.client_practice_name }}</h2>
+  <p>From {{ lab.name }}.</p>
+
+  <table style="width:100%; border-collapse:collapse; margin:16px 0;">
+    <tr><td style="padding:4px 0; color:#5b6b78;">Equipment price</td><td style="padding:4px 0; text-align:right;">{{ (p.results.doctor.discounted_price)|usd }}</td></tr>
+    <tr><td style="padding:4px 0; color:#5b6b78;">Down payment</td><td style="padding:4px 0; text-align:right;">{{ (p.inputs.get('doctor_down_payment', 0))|usd }}</td></tr>
+    <tr><td style="padding:4px 0; color:#5b6b78;">Lease term</td><td style="padding:4px 0; text-align:right;">{{ p.inputs.get('doctor_term', 0)|int }} months</td></tr>
+    <tr><td style="padding:8px 0; font-weight:bold;">Monthly Lease Payment</td><td style="padding:8px 0; text-align:right; font-weight:bold; font-size:18px;">{{ (p.results.doctor.monthly_payment)|usd }}</td></tr>
+    <tr><td style="padding:4px 0; color:#5b6b78;">Monthly usage credit</td><td style="padding:4px 0; text-align:right;">{{ (p.inputs.get('credit_pct', 0))|pct1 }} of monthly invoice</td></tr>
+    {% if p.results.credit_program.breakeven_spend %}
+    <tr><td style="padding:4px 0; color:#5b6b78;">Spend level for $0 due</td><td style="padding:4px 0; text-align:right;">{{ (p.results.credit_program.breakeven_spend)|usd }}/mo</td></tr>
+    {% endif %}
+  </table>
+
+  <p style="margin:24px 0 8px;"><strong>Your documents:</strong></p>
+  <p style="margin:4px 0;">&bull; <a href="{{ proposal_url }}">Full proposal</a></p>
+  <p style="margin:4px 0;">&bull; <a href="{{ agreement_url }}">Lease agreement (for {{ p.client_practice_name }})</a></p>
+  <p style="margin:4px 0;">&bull; <a href="{{ lab_agreement_url }}">Equipment lease agreement (for {{ lab.name }})</a></p>
+
+  <p style="margin-top:24px; color:#5b6b78; font-size:13px;">
+    Bookmark the links above to come back to these documents anytime. This proposal is not a substitute for legal advice.
+  </p>
+</body>
+</html>

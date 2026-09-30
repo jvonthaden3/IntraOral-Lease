@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Lab Equipment Lease Agreement #{{ p.id }}{% endblock %}
+{% block content %}
+<div class="doc">
+  <div class="no-print">
+    <a href="/p/{{ p.token }}" class="btn secondary small">&larr; Back to proposal</a>
+    <a href="/p/{{ p.token }}/agreement" class="btn small">View Doctor Lease Agreement</a>
+    <button class="btn accent small" onclick="window.print()">Print / Save as PDF</button>
+  </div>
+
+  <h1>EQUIPMENT LEASE AGREEMENT</h1>
+  <div class="doc-sub">{{ supplier.name }}</div>
+
+  <p>This Equipment Lease Agreement (&ldquo;Agreement&rdquo;) is made effective as of
+  <span class="sig-line">&nbsp;</span>, 20__, by and between {{ supplier.name }}{% if supplier.address %}, of {{ supplier.address }}{% endif %}
+  (&ldquo;Supplier&rdquo;), and {{ lab.name }}{% if lab.address %}, of {{ lab.address }}{% endif %}
+  (&ldquo;Lab&rdquo;). Lab intends to make the Equipment available to its own customer,
+  {{ p.client_practice_name }}, under a separate agreement between Lab and that customer; this Agreement governs only the
+  relationship between Supplier and Lab.</p>
+
+  <h2>1. EQUIPMENT</h2>
+  <p>Supplier agrees to lease to Lab one (1) intraoral scanner, one (1) computer/laptop, and related set-up and online
+  training (collectively, the &ldquo;Equipment&rdquo;), for Lab's use in its own business, including placing the Equipment
+  at the office of Lab's customer.</p>
+
+  <h2>2. PRICE</h2>
+  <p>The price of the Equipment to Lab is <strong>{{ (p.results.lab.equipment_cost)|usd }}</strong>. Lab shall pay a down
+  payment of <strong>{{ (p.results.lab.down_payment)|usd }}</strong> upon execution of this Agreement, with the remaining
+  {{ (p.results.lab.financed)|usd }} amortized as set out in Section 3 below.</p>
+
+  <h2>3. LEASE PAYMENTS</h2>
+  <p>The amount financed is amortized over {{ p.inputs.get('lab_term', 0)|int }} months at Supplier's then-effective lease
+  rate, resulting in a monthly payment of <strong>{{ (p.results.lab.monthly_payment)|usd }}</strong> (the &ldquo;Lease
+  Payment&rdquo;), due on the same day of each month as the down payment, beginning thirty (30) days after delivery of the
+  Equipment.</p>
+
+  <h2>4. OWNERSHIP</h2>
+  <p>The Equipment is leased, not sold. Supplier retains sole ownership and title to the Equipment at all times during the
+  Lease term. Lab shall not sell, encumber, or permit a lien against the Equipment, and bears the risk of loss for the
+  Equipment (whether at Lab's own location or at a customer's location) at all times, ordinary wear and tear excepted.</p>
+
+  <h2>5. EQUIPMENT LOCATION</h2>
+  <p>Lab may keep the Equipment at its own facility or place it at the office of a Lab customer in the ordinary course of
+  Lab's business of providing the Equipment to its own customers, provided Lab remains fully responsible for the Equipment
+  and for informing Supplier, upon request, of its current location.</p>
+
+  <h2>6. CANCELLATION</h2>
+  <p>Lab may cancel this Agreement at any time upon thirty (30) days' written notice to Supplier. Upon cancellation, Lab
+  shall (a) return the Equipment to Supplier at Lab's own expense within that notice period, (b) pay the Lease Payment due
+  for that final thirty (30) day notice period ({{ (p.results.lab.monthly_payment)|usd }}), and (c) pay an early termination
+  fee equal to one-half (1/2) of one Lease Payment ({{ (p.results.lab.monthly_payment * 0.5)|usd }}). Cancellation does not
+  relieve Lab of any other Lease Payments already due through the notice period.</p>
+
+  <h2>7. END OF LEASE TERM AND UPGRADE OPTION</h2>
+  <p>Upon completion of {{ p.inputs.get('lab_term', 0)|int }} monthly Lease Payments, Lab may take ownership of the
+  Equipment, free of Supplier's security interest, by making one (1) final payment equal to a Lease Payment
+  ({{ (p.results.lab.monthly_payment)|usd }}) (the &ldquo;{{ p.inputs.get('lab_term', 0)|int + 1 }}th-month payment&rdquo;).</p>
+  <p>Alternatively, at any time between month {{ p.inputs.get('lab_term', 0)|int }} and month
+  {{ p.inputs.get('doctor_term', 0)|int }} of this Agreement, Supplier will, upon request, quote Lab an upgrade to
+  then-current equipment at the price in effect at that time. If Lab accepts the upgrade, Lab may swap the Equipment
+  currently placed with its customer for the upgraded equipment, and Lab shall have the remaining time before month
+  {{ p.inputs.get('doctor_term', 0)|int }} of this Agreement to reach agreement with that customer on updated terms
+  reflecting the upgraded equipment.</p>
+
+  <h2>8. DELIVERY AND TRAINING</h2>
+  <p>Supplier will deliver, install, and provide online training on the Equipment within a mutually agreed timeframe
+  following execution of this Agreement, either to Lab directly or, at Lab's direction, to Lab's customer location.</p>
+
+  <h2>9. DEFAULT AND REMEDIES</h2>
+  <p>Each of the following is a material default: (a) failure to make any Lease Payment when due &mdash; a single missed
+  payment is sufficient; (b) Lab's insolvency or bankruptcy. Supplier shall give Lab written notice of any default and five
+  (5) days to cure it. If the default is not cured, Supplier may terminate this Agreement and repossess the Equipment, in
+  addition to any other remedy available at law.</p>
+
+  <h2>10. WARRANTIES; LIMITATION OF LIABILITY</h2>
+  <p>Supplier warrants the Equipment will be free of substantive defects in material and workmanship for one (1) year from
+  delivery. SUPPLIER SHALL NOT BE LIABLE FOR ANY INCIDENTAL, SPECIAL, OR CONSEQUENTIAL DAMAGES OF ANY NATURE, EVEN IF
+  ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.</p>
+
+  <h2>11. DISPUTE RESOLUTION; GOVERNING LAW</h2>
+  <p>Any dispute arising out of or relating to this Agreement shall be resolved by binding arbitration under the rules of
+  the American Arbitration Association. This Agreement is governed by the laws of the State of Illinois, without regard to
+  its conflicts of law principles.</p>
+
+  <h2>12. MISCELLANEOUS</h2>
+  <p>This Agreement is the entire agreement between the parties regarding its subject matter and supersedes all prior
+  discussions or agreements on that subject. It may be amended only by a writing signed by both parties. If any provision
+  is held invalid or unenforceable, the remaining provisions remain in full force and effect. A party's failure to enforce
+  any provision is not a waiver of its right to do so later.</p>
+
+  <h2>13. SIGNATURES</h2>
+  <p><strong>{{ supplier.name|upper }}:</strong></p>
+  <p>By: <span class="sig-line">&nbsp;</span> &nbsp;&nbsp; Date: <span class="sig-line" style="min-width:140px;">&nbsp;</span></p>
+  <p style="margin-top:24px;"><strong>{{ lab.name|upper }}:</strong></p>
+  <p>By: <span class="sig-line">&nbsp;</span> &nbsp;&nbsp; Date: <span class="sig-line" style="min-width:140px;">&nbsp;</span></p>
+  <p>Name / Title: <span class="sig-line">&nbsp;</span></p>
+</div>
+{% endblock %}

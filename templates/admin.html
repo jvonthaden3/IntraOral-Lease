@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% block title %}Admin &mdash; All Proposals{% endblock %}
+{% block nav %}<a href="/admin/logout">Log out</a>{% endblock %}
+{% block content %}
+<h1>All Proposals (Admin)</h1>
+<p class="subtitle">Every lab and every proposal, across the whole system. Labs themselves can't see this page.</p>
+
+<div class="card">
+  <label for="lab_filter">Filter by lab</label>
+  <select id="lab_filter" onchange="location.href = this.value ? '/admin?lab_id=' + this.value : '/admin'">
+    <option value="">All labs</option>
+    {% for lab in labs %}
+    <option value="{{ lab.id }}" {% if selected_lab_id == lab.id %}selected{% endif %}>{{ lab.name }}</option>
+    {% endfor %}
+  </select>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0">Labs</h2>
+  <table>
+    <thead><tr><th>Name</th><th>Contact</th><th>Email</th><th>Phone</th><th>Created</th><th></th></tr></thead>
+    <tbody>
+      {% for lab in labs %}
+      <tr>
+        <td>{{ lab.name }}</td>
+        <td>{{ lab.contact_name }}</td>
+        <td>{{ lab.email }}</td>
+        <td>{{ lab.phone }}</td>
+        <td>{{ lab.created_at[:10] }}</td>
+        <td><a href="/lab/{{ lab.access_token }}" class="btn small secondary">View their dashboard</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0">Proposals</h2>
+  {% if proposals %}
+  <table>
+    <thead>
+      <tr><th>#</th><th>Lab</th><th>Client / Practice</th><th>Doctor</th><th>Monthly Payment</th><th>Status</th><th>Created</th><th></th></tr>
+    </thead>
+    <tbody>
+      {% for p in proposals %}
+      <tr>
+        <td>{{ p.id }}</td>
+        <td>{{ p.lab_name }}</td>
+        <td>{{ p.client_practice_name }}</td>
+        <td>{{ p.client_doctor_name }}</td>
+        <td>{{ (p.results.doctor.monthly_payment)|usd }}</td>
+        <td><span class="badge {{ p.status }}">{{ p.status }}</span></td>
+        <td>{{ p.created_at[:10] }}</td>
+        <td>
+          <a href="/p/{{ p.token }}" class="btn small secondary">Proposal</a>
+          <a href="/p/{{ p.token }}/agreement" class="btn small secondary">Doctor Agreement</a>
+          <a href="/p/{{ p.token }}/lab-agreement" class="btn small secondary">Lab Agreement</a>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p>No proposals yet.</p>
+  {% endif %}
+</div>
+{% endblock %}

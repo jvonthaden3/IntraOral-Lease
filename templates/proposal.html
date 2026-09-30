@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+{% block title %}Proposal #{{ p.id }}{% endblock %}
+{% block content %}
+<div class="doc">
+  <div class="no-print">
+    <a href="/lab/{{ lab.access_token }}" class="btn secondary small">&larr; Back to your proposals</a>
+    <a href="/p/{{ p.token }}/agreement" class="btn small">View Doctor Lease Agreement</a>
+    <a href="/p/{{ p.token }}/lab-agreement" class="btn small secondary">View Lab Lease Agreement</a>
+    <button class="btn accent small" onclick="window.print()">Print / Save as PDF</button>
+  </div>
+
+  <h1>Intraoral Scanner Lease Proposal</h1>
+  <div class="doc-sub">{{ lab.name }}</div>
+
+  <table style="width:100%; border:none; margin-bottom:20px;">
+    <tr>
+      <td style="border:none; vertical-align:top; width:50%;">
+        <strong>From:</strong><br>
+        {{ lab.name }}<br>
+        {% if lab.contact_name %}{{ lab.contact_name }}<br>{% endif %}
+        {% if lab.address %}{{ lab.address }}<br>{% endif %}
+        {% if lab.email %}{{ lab.email }}<br>{% endif %}
+        {% if lab.phone %}{{ lab.phone }}{% endif %}
+      </td>
+      <td style="border:none; vertical-align:top; width:50%;">
+        <strong>To:</strong><br>
+        {{ p.client_practice_name }}<br>
+        {% if p.client_doctor_name %}{{ p.client_doctor_name }}<br>{% endif %}
+        {% if p.client_address %}{{ p.client_address }}<br>{% endif %}
+        {% if p.client_email %}{{ p.client_email }}<br>{% endif %}
+        {% if p.client_phone %}{{ p.client_phone }}{% endif %}
+      </td>
+    </tr>
+  </table>
+  <p class="note" style="text-align:right;">Proposal date: {{ p.created_at[:10] }} &middot; Proposal #{{ p.id }}</p>
+
+  <h2>The Offer</h2>
+  <p>
+    {{ lab.name }} is pleased to offer {{ p.client_practice_name }} an intraoral scanner package
+    (scanner, PC/laptop, cart, shipping, and training) under a lease. Standard price is
+    <strong>{{ (p.results.doctor.discounted_price + p.inputs.get('discount', 0))|usd }}</strong>.
+    By committing to this lease and a down payment of <strong>{{ (p.inputs.get('doctor_down_payment', 0))|usd }}</strong>,
+    {{ lab.name }} will reduce the price by <strong>{{ (p.inputs.get('discount', 0))|usd }}</strong>,
+    for an adjusted price of <strong>{{ (p.results.doctor.discounted_price)|usd }}</strong>.
+  </p>
+
+  <h2>Lease Payment</h2>
+  <table>
+    <tr><th>Down payment (due at signing)</th><td>{{ (p.inputs.get('doctor_down_payment', 0))|usd }}</td></tr>
+    <tr><th>Amount financed</th><td>{{ (p.results.doctor.financed)|usd }}</td></tr>
+    <tr><th>Term</th><td>{{ p.inputs.get('doctor_term', 0)|int }} months</td></tr>
+    <tr><th>Monthly Lease Payment</th><td><strong>{{ (p.results.doctor.monthly_payment)|usd }}</strong></td></tr>
+    <tr><th>Total over full lease term</th><td>{{ (p.results.doctor.total_over_term)|usd }}</td></tr>
+  </table>
+
+  <h2>Monthly Usage Credit</h2>
+  <p>
+    Each month, {{ lab.name }} will credit
+    <strong>{{ (p.inputs.get('credit_pct', 0))|pct1 }}</strong>
+    of {{ p.client_practice_name }}'s monthly lab invoice toward that month's Lease Payment.
+    Invoices under {{ (p.inputs.get('low_threshold', 0))|usd }} receive no credit (full payment due).
+    Spend
+    {% if p.results.credit_program.breakeven_spend %}
+      <strong>{{ (p.results.credit_program.breakeven_spend)|usd }}</strong> or more in a month
+    {% else %}
+      enough in a month
+    {% endif %}
+    and no Lease Payment is due at all.
+  </p>
+
+  <table>
+    <thead><tr><th>Monthly Lab Bill</th><th>Credit Applied</th><th>Doctor Owes</th></tr></thead>
+    <tbody>
+      {% for row in p.results.schedule %}
+      <tr>
+        <td>{{ (row.invoice)|usd }}</td>
+        <td>{{ (row.credit_applied)|usd }}</td>
+        <td>{{ (row.doctor_owes)|usd }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h2>Next Step</h2>
+  <p>This proposal is valid for 30 days. To move forward, sign the accompanying Scanner Lease Agreement.</p>
+
+  <div class="no-print" style="margin-top:24px; padding-top:16px; border-top:1px solid #ddd;">
+    <h3 style="font-family: -apple-system, sans-serif;">Email yourself these documents</h3>
+    <p class="note">Sends the spec sheet plus links to this proposal and both lease agreements to any address(es) you enter (comma-separate for more than one).</p>
+    <div class="grid" style="max-width:500px;">
+      <div class="field" style="grid-column:1/-1;">
+        <input type="email" id="email_to" placeholder="you@example.com" multiple>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn accent small" id="btn_send_email">Send Email</button>
+    </div>
+    <div id="email_status" class="note" style="display:none;"></div>
+
+    <h3 style="font-family: -apple-system, sans-serif; margin-top:20px;">Bookmark these links</h3>
+    <p class="note">
+      This proposal: <code>{{ request.url_root[:-1] }}/p/{{ p.token }}</code><br>
+      Your lab's dashboard (all your proposals, private to you): <code>{{ request.url_root[:-1] }}/lab/{{ lab.access_token }}</code>
+    </p>
+  </div>
+</div>
+
+<script>
+document.getElementById('btn_send_email').addEventListener('click', async () => {
+  const statusEl = document.getElementById('email_status');
+  const email = document.getElementById('email_to').value.trim();
+  statusEl.style.display = '';
+  statusEl.style.color = '';
+  if (!email) {
+    statusEl.textContent = 'Enter an email address first.';
+    return;
+  }
+  statusEl.textContent = 'Sending...';
+  try {
+    const resp = await fetch(window.location.pathname + '/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data.error || 'Could not send email');
+    statusEl.textContent = 'Sent to ' + email;
+  } catch (e) {
+    statusEl.style.color = 'var(--danger)';
+    statusEl.textContent = e.message;
+  }
+});
+</script>
+{% endblock %}
