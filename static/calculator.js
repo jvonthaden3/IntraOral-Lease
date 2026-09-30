@@ -158,16 +158,26 @@ function render() {
 
 document.addEventListener('DOMContentLoaded', render);
 
-// Section 2 (sell price, discount, doctor down/APR/term) only recomputes
-// when Update is clicked.
-document.getElementById('btn_update').addEventListener('click', render);
-
-// Sections 3, 4, and 5 recompute live, on every change -- no button needed.
-['estimated_invoice', 'credit_pct', 'low_threshold', 'unit_cost', 'unit_price'].forEach(id => {
+// Every input on the page recomputes live, automatically, on every change --
+// no button needed anywhere. This used to be gated behind an "Update" button
+// for section 2 (sell price / discount / doctor down / APR / term), but that
+// created a real risk: the on-screen preview could go stale if a field was
+// edited again after clicking Update, while "Save & Generate Proposal" always
+// saves whatever is currently typed -- so the saved proposal could end up
+// with different numbers than what the screen last showed. Keeping
+// everything live means what's on screen is always exactly what gets saved.
+[
+  'sell_price', 'discount', 'doctor_down', 'doctor_apr', 'doctor_term',
+  'estimated_invoice', 'credit_pct', 'low_threshold', 'unit_cost', 'unit_price',
+].forEach(id => {
   const el = document.getElementById(id);
   el.addEventListener('input', render);
   el.addEventListener('change', render);
 });
+
+// The Update button still works (just re-runs the same live calculation) --
+// harmless to click, no longer required.
+document.getElementById('btn_update').addEventListener('click', render);
 
 document.getElementById('btn_use_required_pct').addEventListener('click', () => {
   const inputs = gatherInputs();
@@ -199,6 +209,22 @@ document.getElementById('btn_generate').addEventListener('click', async () => {
   }
 
   try {
+    const editTokenEl = document.getElementById('edit_token');
+    const editToken = editTokenEl ? editTokenEl.value : '';
+
+    if (editToken) {
+      // Editing an existing proposal: update it in place, same link.
+      const resp = await fetch('/api/proposals/' + editToken, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ inputs, client }),
+      });
+      if (!resp.ok) throw new Error((await resp.json()).error || 'Could not update proposal');
+      const proposal = await resp.json();
+      window.location.href = proposal.proposal_url;
+      return;
+    }
+
     let labToken = document.getElementById('lab_token').value;
 
     if (!labToken) {

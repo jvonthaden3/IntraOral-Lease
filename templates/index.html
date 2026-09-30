@@ -17,6 +17,11 @@
   </div>
   <div class="note">You're working as <strong>{{ lab.name }}</strong>, from your saved lab link. Every proposal you generate here is
   private to your lab &mdash; only you can see it. Not your lab? <a href="/">Start fresh</a>.</div>
+  {% if proposal %}
+  <div class="note" style="background:#fff8e1; border-color:#f0d98c;"><strong>You're editing an existing proposal</strong>
+  (for {{ proposal.client_practice_name }}). It's pre-filled below with that proposal's own saved numbers. Saving will
+  update this same proposal and keep its existing link &mdash; it will not create a new one.</div>
+  {% endif %}
   {% else %}
   <input type="hidden" id="lab_token" value="">
   <div class="grid">
@@ -56,14 +61,14 @@
 
 <div class="card">
   <h2 style="margin-top:0">2. Price to Your Doctor (Lease)</h2>
-  <p class="note">Determine the sell price, the term, the interest rate, and any discount. Click Update to calculate the
-  doctor's monthly payment.</p>
+  <p class="note">Set the sell price, the term, the interest rate, and any discount. The doctor's monthly payment below
+  updates automatically as you go.</p>
   <div class="grid">
-    <div class="field"><label>Sell price to doctor ($)</label><input type="number" id="sell_price" value="15000"></div>
-    <div class="field"><label>Discount for signing ($)</label><input type="number" id="discount" value="0"></div>
-    <div class="field"><label>Doctor down payment ($)</label><input type="number" id="doctor_down" value="1500"></div>
-    <div class="field"><label>Doctor APR (%)</label><input type="number" step="0.001" id="doctor_apr" value="8.5"></div>
-    <div class="field"><label>Lease term (months)</label><input type="number" id="doctor_term" value="40"></div>
+    <div class="field"><label>Sell price to doctor ($)</label><input type="number" id="sell_price" value="{{ proposal.inputs.sell_price if proposal else 15000 }}"></div>
+    <div class="field"><label>Discount for signing ($)</label><input type="number" id="discount" value="{{ proposal.inputs.discount if proposal else 0 }}"></div>
+    <div class="field"><label>Doctor down payment ($)</label><input type="number" id="doctor_down" value="{{ proposal.inputs.doctor_down_payment if proposal else 1500 }}"></div>
+    <div class="field"><label>Doctor APR (%)</label><input type="number" step="0.001" id="doctor_apr" value="{{ (proposal.inputs.doctor_apr * 100) if proposal else 8.5 }}"></div>
+    <div class="field"><label>Lease term (months)</label><input type="number" id="doctor_term" value="{{ proposal.inputs.doctor_term if proposal else 40 }}"></div>
   </div>
   <div class="actions">
     <button type="button" class="btn accent" id="btn_update">Update</button>
@@ -75,7 +80,7 @@
   <div class="card">
     <h2 style="margin-top:0">3. Doctor's Estimated Spend</h2>
     <div class="grid">
-      <div class="field"><label>Doctor's estimated monthly invoice ($)</label><input type="number" id="estimated_invoice" value="3000"></div>
+      <div class="field"><label>Doctor's estimated monthly invoice ($)</label><input type="number" id="estimated_invoice" value="{{ proposal.inputs.estimated_invoice if proposal else 3000 }}"></div>
       <div class="field readonly"><label>% needed to fully cover the lease payment</label><input type="text" id="required_pct_display" readonly></div>
     </div>
     <div class="actions" style="margin-top:8px;">
@@ -87,8 +92,8 @@
   <div class="card">
     <h2 style="margin-top:0">4. Monthly Doctor Invoice Credit</h2>
     <div class="grid">
-      <div class="field"><label>% of monthly bill credited to lease payment</label><input type="number" step="0.1" id="credit_pct" value="14"></div>
-      <div class="field"><label>No credit below this invoice ($)</label><input type="number" id="low_threshold" value="500"></div>
+      <div class="field"><label>% of monthly bill credited to lease payment</label><input type="number" step="0.1" id="credit_pct" value="{{ (proposal.inputs.credit_pct * 100) if proposal else 14 }}"></div>
+      <div class="field"><label>No credit below this invoice ($)</label><input type="number" id="low_threshold" value="{{ proposal.inputs.low_threshold if proposal else 500 }}"></div>
     </div>
     <div class="note">Below the threshold, the doctor owes the full lease payment. Between the threshold and the break-even spend, the credit is prorated. At or above break-even, nothing is due.</div>
   </div>
@@ -98,8 +103,8 @@
   <h2 style="margin-top:0">5. Per Unit Profitability <span style="font-weight:400;color:var(--muted);font-size:12px;">(optional)</span></h2>
   <div class="note" style="margin-top:0;">Estimate your cost and invoice price per unit to this doctor.</div>
   <div class="grid">
-    <div class="field"><label>Your cost per unit ($)</label><input type="number" step="0.01" id="unit_cost" value="35"></div>
-    <div class="field"><label>Price to doctor per unit ($)</label><input type="number" step="0.01" id="unit_price" value="109"></div>
+    <div class="field"><label>Your cost per unit ($)</label><input type="number" step="0.01" id="unit_cost" value="{{ proposal.inputs.unit_cost if proposal else 35 }}"></div>
+    <div class="field"><label>Price to doctor per unit ($)</label><input type="number" step="0.01" id="unit_price" value="{{ proposal.inputs.unit_price if proposal else 109 }}"></div>
   </div>
   <div class="note">Fills in the Profit / Net Profit / Net Margin columns in the schedule below.</div>
 </div>
@@ -138,16 +143,17 @@
 </div>
 
 <div class="card">
-  <h2 style="margin-top:0">Generate Proposal &amp; Agreement</h2>
+  <h2 style="margin-top:0">{{ 'Update Proposal & Agreement' if proposal else 'Generate Proposal & Agreement' }}</h2>
+  <input type="hidden" id="edit_token" value="{{ proposal.token if proposal else '' }}">
   <div class="grid">
-    <div class="field"><label>Practice name</label><input type="text" id="cl_practice"></div>
-    <div class="field"><label>Doctor name</label><input type="text" id="cl_doctor"></div>
-    <div class="field"><label>Email</label><input type="email" id="cl_email"></div>
-    <div class="field"><label>Phone</label><input type="tel" id="cl_phone"></div>
-    <div class="field" style="grid-column: 1 / -1;"><label>Practice address</label><input type="text" id="cl_address"></div>
+    <div class="field"><label>Practice name</label><input type="text" id="cl_practice" value="{{ proposal.client_practice_name if proposal else '' }}"></div>
+    <div class="field"><label>Doctor name</label><input type="text" id="cl_doctor" value="{{ proposal.client_doctor_name if proposal else '' }}"></div>
+    <div class="field"><label>Email</label><input type="email" id="cl_email" value="{{ proposal.client_email if proposal else '' }}"></div>
+    <div class="field"><label>Phone</label><input type="tel" id="cl_phone" value="{{ proposal.client_phone if proposal else '' }}"></div>
+    <div class="field" style="grid-column: 1 / -1;"><label>Practice address</label><input type="text" id="cl_address" value="{{ proposal.client_address if proposal else '' }}"></div>
   </div>
   <div class="actions">
-    <button class="btn accent" id="btn_generate">Save &amp; Generate Proposal</button>
+    <button class="btn accent" id="btn_generate">{{ 'Save Changes to This Proposal' if proposal else 'Save & Generate Proposal' }}</button>
   </div>
   <div class="error" id="err" style="display:none;"></div>
 </div>

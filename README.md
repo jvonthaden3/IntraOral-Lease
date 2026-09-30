@@ -31,9 +31,9 @@ a local database so labs can come back to it.
    lab can't edit them, and the interest rate itself is never shown, only
    the resulting payment.
 2. **Price to the doctor** — set the sell price, a sign-up discount, the
-   doctor's down payment, rate and term, then click **Update** to compute
-   their monthly lease payment (rounded to the nearest $5 by default). It
-   only recalculates when you click Update, not on every keystroke.
+   doctor's down payment, rate and term; their monthly lease payment (rounded
+   to the nearest $5 by default) recalculates automatically as you type, so
+   the screen always matches what will be saved.
 3. **Doctor's estimated spend** — enter what the doctor is expected to spend
    monthly, and see the % of that spend needed to fully cover their lease
    payment, with a button to use that % below.

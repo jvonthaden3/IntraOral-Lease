@@ -57,7 +57,21 @@ def index():
     lab = db.get_lab_by_token(lab_token) if lab_token else None
     settings = db.get_settings()
     lab_monthly_payment = calc.pmt(settings["lab_apr"], settings["lab_term"], settings["lab_financed"])
-    return render_template("index.html", lab=lab, settings=settings, lab_monthly_payment=lab_monthly_payment, supplier=config.SUPPLIER)
+    return render_template("index.html", lab=lab, proposal=None, settings=settings, lab_monthly_payment=lab_monthly_payment, supplier=config.SUPPLIER)
+
+
+# ---------------------------------------------------------------------------
+# Re-open an existing proposal on the calculator page, pre-filled with its
+# own saved numbers, so a lab can correct or adjust a deal without guessing
+# at what it originally entered. Saving here updates that SAME proposal (and
+# keeps its link) instead of creating a new one.
+# ---------------------------------------------------------------------------
+@app.route("/p/<token>/edit")
+def edit_proposal(token):
+    p, lab = _get_proposal_and_lab_or_404(token)
+    settings = db.get_settings()
+    lab_monthly_payment = calc.pmt(settings["lab_apr"], settings["lab_term"], settings["lab_financed"])
+    return render_template("index.html", lab=lab, proposal=p, settings=settings, lab_monthly_payment=lab_monthly_payment, supplier=config.SUPPLIER)
 
 
 @app.route("/api/calc", methods=["POST"])
@@ -125,6 +139,37 @@ def api_create_proposal():
         "lab_token": lab["access_token"],
         "proposal_url": url_for("view_proposal", token=proposal["token"]),
     }), 201
+
+
+@app.route("/api/proposals/<token>", methods=["PUT"])
+def api_update_proposal(token):
+    """Update an existing proposal in place -- same link, corrected numbers --
+    instead of spinning off a brand-new one."""
+    p = db.get_proposal_by_token(token)
+    if not p:
+        return jsonify({"error": "Proposal not found"}), 404
+
+    data = request.get_json(force=True) or {}
+    inputs = data.get("inputs", {})
+    client = data.get("client", {})
+    if not client.get("practice_name"):
+        return jsonify({"error": "Client practice name is required"}), 400
+
+    # Same rule as creating a proposal: lab-side cost/financing terms always
+    # come from the current admin settings, never from the browser.
+    settings = db.get_settings()
+    inputs["equipment_cost"] = settings["equipment_cost"]
+    inputs["lab_down_payment"] = settings["lab_down_payment"]
+    inputs["lab_apr"] = settings["lab_apr"]
+    inputs["lab_term"] = settings["lab_term"]
+    inputs["round_to"] = settings["round_to"]
+
+    results = calc.compute(inputs)
+    db.update_proposal(p["id"], client, inputs, results)
+    return jsonify({
+        "token": token,
+        "proposal_url": url_for("view_proposal", token=token),
+    })
 
 
 # ---------------------------------------------------------------------------

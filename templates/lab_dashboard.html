@@ -22,6 +22,7 @@
         <td>{{ p.created_at[:10] }}</td>
         <td>
           <a href="/p/{{ p.token }}" class="btn small secondary">Proposal</a>
+          <a href="/p/{{ p.token }}/edit" class="btn small secondary">Edit</a>
           <a href="/p/{{ p.token }}/agreement" class="btn small secondary">Doctor Agreement</a>
           <a href="/p/{{ p.token }}/lab-agreement" class="btn small secondary">Lab Agreement</a>
         </td>

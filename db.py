@@ -233,6 +233,32 @@ def list_proposals(lab_id=None):
     return out
 
 
+def update_proposal(proposal_id, client, inputs, results):
+    """Overwrite an existing proposal in place -- same id, same token, same
+    link -- so editing a proposal never creates a stray duplicate."""
+    conn = get_db()
+    conn.execute(
+        """UPDATE proposals SET
+             client_practice_name = ?, client_doctor_name = ?, client_email = ?,
+             client_phone = ?, client_address = ?, inputs_json = ?, results_json = ?,
+             updated_at = ?
+           WHERE id = ?""",
+        (
+            client.get("practice_name", ""),
+            client.get("doctor_name", ""),
+            client.get("email", ""),
+            client.get("phone", ""),
+            client.get("address", ""),
+            json.dumps(inputs),
+            json.dumps(results),
+            now(),
+            proposal_id,
+        ),
+    )
+    conn.commit()
+    conn.close()
+
+
 def update_status(proposal_id, status):
     conn = get_db()
     conn.execute(
