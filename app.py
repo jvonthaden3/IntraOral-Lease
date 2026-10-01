@@ -102,6 +102,7 @@ def api_create_lab():
         owner_name=data.get("owner_name", "").strip(),
         owner_address=data.get("owner_address", "").strip(),
         owner_ssn=data.get("owner_ssn", "").strip(),
+        state=data.get("state", "").strip(),
     )
     lab = db.get_lab(lab_id)
     lab.pop("owner_ssn", None)  # never echo this back to the browser

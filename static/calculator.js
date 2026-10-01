@@ -235,6 +235,7 @@ document.getElementById('btn_generate').addEventListener('click', async () => {
         return;
       }
       const ownerNameEl = document.getElementById('owner_name');
+      const labStateEl = document.getElementById('lab_state');
       const labResp = await fetch('/api/labs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -245,6 +246,7 @@ document.getElementById('btn_generate').addEventListener('click', async () => {
           phone: document.getElementById('lab_phone').value.trim(),
           address: document.getElementById('lab_address').value.trim(),
           owner_name: ownerNameEl ? ownerNameEl.value.trim() : '',
+          state: labStateEl ? labStateEl.value.trim() : '',
         }),
       });
       if (!labResp.ok) throw new Error((await labResp.json()).error || 'Could not save lab profile');

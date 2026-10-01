@@ -153,14 +153,22 @@ database.
 
 ## Notes / things to fill in before using a generated agreement for real
 
-- **Early termination fee** (Section 7/6, Cancellation, on both agreements)
-  is computed automatically: the Lease Payment for the final 30-day notice
-  period, plus a fee equal to half of one Lease Payment.
-- **Governing law** is hardcoded to Illinois on both agreements. If labs
-  outside Illinois ever use this, that line should become a per-lab field.
+- **Early termination fee, Scanner Lease Agreement** (Section 7, Cancellation):
+  cancellation requires sixty (60) days' notice, with the two Lease Payments
+  covering that notice period plus a fee equal to one full Lease Payment due
+  on top.
+- **Early termination fee, Equipment Lease Agreement** (Section 6,
+  Cancellation): unchanged — thirty (30) days' notice, one Lease Payment for
+  the notice period, plus a fee equal to half of one Lease Payment.
+- **Governing law, Scanner Lease Agreement** (Section 12): now a per-lab
+  field (`lab.state`, set on the "Your Lab" form) instead of hardcoded —
+  shows `[Lab State]` until a lab fills it in.
+- **Governing law, Equipment Lease Agreement** (Section 11): still hardcoded
+  to Illinois.
 - **Doctor end-of-lease-term** (Section 8 of the doctor agreement): the lab
-  decides at its own discretion between a one-payment buyout, a quoted
-  upgrade, or month-to-month continuation — no fixed dollar blank to fill in.
+  decides at its own discretion between a quoted upgrade or month-to-month
+  continuation — the former one-payment buyout option was removed — no
+  fixed dollar blank to fill in.
 - **Lab end-of-lease-term** (Section 7 of the lab-supplier agreement): a
   final payment (one Lease Payment) buys out the equipment, or the lab can
   take a quoted upgrade between month `lab_term` and month `doctor_term` and

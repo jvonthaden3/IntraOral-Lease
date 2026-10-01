@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS labs (
     owner_name TEXT,
     owner_address TEXT,
     owner_ssn TEXT,
+    state TEXT,
     access_token TEXT UNIQUE,
     created_at TEXT NOT NULL
 );
@@ -70,7 +71,7 @@ def get_db():
     existing_proposal_cols = {r["name"] for r in conn.execute("PRAGMA table_info(proposals)")}
     if "token" not in existing_proposal_cols:
         conn.execute("ALTER TABLE proposals ADD COLUMN token TEXT")
-    for col in ("owner_name", "owner_address", "owner_ssn"):
+    for col in ("owner_name", "owner_address", "owner_ssn", "state"):
         if col not in existing_lab_cols:
             conn.execute(f"ALTER TABLE labs ADD COLUMN {col} TEXT")
     # Backfill any rows that predate the token columns.
@@ -111,14 +112,14 @@ def now():
 
 
 def create_lab(name, contact_name="", email="", phone="", address="",
-                owner_name="", owner_address="", owner_ssn=""):
+                owner_name="", owner_address="", owner_ssn="", state=""):
     conn = get_db()
     token = _new_token()
     cur = conn.execute(
         """INSERT INTO labs
-           (name, contact_name, email, phone, address, owner_name, owner_address, owner_ssn, access_token, created_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
-        (name, contact_name, email, phone, address, owner_name, owner_address, owner_ssn, token, now()),
+           (name, contact_name, email, phone, address, owner_name, owner_address, owner_ssn, state, access_token, created_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (name, contact_name, email, phone, address, owner_name, owner_address, owner_ssn, state, token, now()),
     )
     conn.commit()
     lab_id = cur.lastrowid

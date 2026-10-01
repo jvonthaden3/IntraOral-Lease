@@ -1,6 +1,11 @@
 {% extends "base.html" %}
 {% block title %}Lab Equipment Lease Agreement #{{ p.id }}{% endblock %}
 {% block content %}
+<style>
+  @media print {
+    @page { margin: 0.7in 0.5in; }
+  }
+</style>
 <div class="doc">
   <div class="no-print">
     <a href="/p/{{ p.token }}" class="btn secondary small">&larr; Back to proposal</a>
@@ -9,71 +14,68 @@
   </div>
 
   <h1>EQUIPMENT LEASE AGREEMENT</h1>
-  <div class="doc-sub">{{ supplier.name }}</div>
 
   <p>This Equipment Lease Agreement (&ldquo;Agreement&rdquo;) is made effective as of
   <span class="sig-line">&nbsp;</span>, 20__, by and between {{ supplier.name }}{% if supplier.address %}, of {{ supplier.address }}{% endif %}
   (&ldquo;Supplier&rdquo;), and {{ lab.owner_name or '[Owner Name]' }}, individually, as the owner of {{ lab.name }}{% if lab.address %},
-  located at {{ lab.address }}{% endif %} (collectively with {{ lab.name }}, &ldquo;Lab&rdquo;). Unlike a lease to one of Lab's own
-  customers, this Agreement is signed by {{ lab.owner_name or '[Owner Name]' }} in an individual capacity as well as on behalf of
-  {{ lab.name }}, and {{ lab.owner_name or '[Owner Name]' }} agrees to be personally and individually liable, jointly with
-  {{ lab.name }}, for all payment and other obligations of Lab under this Agreement. Lab intends to make the Equipment available
-  to its own customer, {{ p.client_practice_name }}, under a separate agreement between Lab and that customer; this Agreement
-  governs only the relationship between Supplier and Lab.</p>
+  located at {{ lab.address }}{% endif %} (collectively with {{ lab.name }}, &ldquo;Leasee&rdquo;). All payment and other
+  obligations under this agreement shall be the collective responsibility of the Leasee. Leasee intends to make the Equipment
+  available to its own customer, {{ p.client_practice_name }}, under a separate agreement between Leasee and that customer;
+  this Agreement governs only the relationship between Supplier and Leasee.</p>
 
   <h2>1. EQUIPMENT</h2>
-  <p>Supplier agrees to lease to Lab one (1) intraoral scanner, one (1) computer/laptop, and related set-up and online
-  training (collectively, the &ldquo;Equipment&rdquo;), for Lab's use in its own business, including placing the Equipment
-  at the office of Lab's customer.</p>
+  <p>Supplier agrees to lease to Leasee one (1) intraoral scanner, one (1) computer/laptop, and related set-up and online
+  training (collectively, the &ldquo;Equipment&rdquo;), for Leasee's use in its own business, including placing the Equipment
+  at the office of Leasee's customer.</p>
 
   <h2>2. PRICE</h2>
-  <p>The price of the Equipment to Lab is <strong>{{ (p.results.lab.equipment_cost)|usd }}</strong>. Lab shall pay a down
+  <p>The price of the Equipment to Leasee is <strong>{{ (p.results.lab.equipment_cost)|usd }}</strong>. Leasee shall pay a down
   payment of <strong>{{ (p.results.lab.down_payment)|usd }}</strong> upon execution of this Agreement, with the remaining
   {{ (p.results.lab.financed)|usd }} amortized as set out in Section 3 below.</p>
 
   <h2>3. LEASE PAYMENTS</h2>
-  <p>The amount financed is amortized over {{ p.inputs.get('lab_term', 0)|int }} months at Supplier's then-effective lease
+  <p>The amount financed is amortized over {{ p.inputs.get('lab_term', 0)|int }} months at Supplier's current lease
   rate, resulting in a monthly payment of <strong>{{ (p.results.lab.monthly_payment)|usd }}</strong> (the &ldquo;Lease
   Payment&rdquo;), due on the same day of each month as the down payment, beginning thirty (30) days after delivery of the
   Equipment.</p>
 
   <h2>4. OWNERSHIP</h2>
   <p>The Equipment is leased, not sold. Supplier retains sole ownership and title to the Equipment at all times during the
-  Lease term. Lab shall not sell, encumber, or permit a lien against the Equipment, and bears the risk of loss for the
-  Equipment (whether at Lab's own location or at a customer's location) at all times, ordinary wear and tear excepted.</p>
+  Lease term. Leasee shall not sell, encumber, or permit a lien against the Equipment, and bears the risk of loss for the
+  Equipment (whether at Leasee's own location or at a customer's location) at all times, ordinary wear and tear excepted.</p>
 
   <h2>5. EQUIPMENT LOCATION</h2>
-  <p>Lab may keep the Equipment at its own facility or place it at the office of a Lab customer in the ordinary course of
-  Lab's business of providing the Equipment to its own customers, provided Lab remains fully responsible for the Equipment
-  and for informing Supplier, upon request, of its current location.</p>
+  <p>Leasee may keep the Equipment at its own facility or place it at the office of a Leasee customer in the ordinary course
+  of Leasee's business of providing the Equipment to its own customers, provided Leasee remains fully responsible for the
+  Equipment and for informing Supplier, upon request, of its current location.</p>
 
   <h2>6. CANCELLATION</h2>
-  <p>Lab may cancel this Agreement at any time upon thirty (30) days' written notice to Supplier. Upon cancellation, Lab
-  shall (a) return the Equipment to Supplier at Lab's own expense within that notice period, (b) pay the Lease Payment due
+  <p>Leasee may cancel this Agreement at any time upon thirty (30) days' written notice to Supplier. Upon cancellation, Leasee
+  shall (a) return the Equipment to Supplier at Leasee's own expense within that notice period, (b) pay the Lease Payment due
   for that final thirty (30) day notice period ({{ (p.results.lab.monthly_payment)|usd }}), and (c) pay an early termination
   fee equal to one-half (1/2) of one Lease Payment ({{ (p.results.lab.monthly_payment * 0.5)|usd }}). Cancellation does not
-  relieve Lab of any other Lease Payments already due through the notice period.</p>
+  relieve Leasee of any other Lease Payments already due through the notice period.</p>
 
   <h2>7. END OF LEASE TERM AND UPGRADE OPTION</h2>
-  <p>Upon completion of {{ p.inputs.get('lab_term', 0)|int }} monthly Lease Payments, Lab may take ownership of the
+  <p>Upon completion of {{ p.inputs.get('lab_term', 0)|int }} monthly Lease Payments, Leasee may take ownership of the
   Equipment, free of Supplier's security interest, by making one (1) final payment equal to a Lease Payment
   ({{ (p.results.lab.monthly_payment)|usd }}) (the &ldquo;{{ p.inputs.get('lab_term', 0)|int + 1 }}th-month payment&rdquo;).</p>
   <p>Alternatively, at any time between month {{ p.inputs.get('lab_term', 0)|int }} and month
-  {{ p.inputs.get('doctor_term', 0)|int }} of this Agreement, Supplier will, upon request, quote Lab an upgrade to
-  then-current equipment at the price in effect at that time. If Lab accepts the upgrade, Lab may swap the Equipment
-  currently placed with its customer for the upgraded equipment, and Lab shall have the remaining time before month
+  {{ p.inputs.get('doctor_term', 0)|int }} of this Agreement, Supplier will, upon request, quote Leasee an upgrade to
+  then-current equipment at the price in effect at that time. If Leasee accepts the upgrade, Leasee may swap the Equipment
+  currently placed with its customer for the upgraded equipment, and Leasee shall have the remaining time before month
   {{ p.inputs.get('doctor_term', 0)|int }} of this Agreement to reach agreement with that customer on updated terms
   reflecting the upgraded equipment.</p>
 
   <h2>8. DELIVERY AND TRAINING</h2>
-  <p>Supplier will deliver, install, and provide online training on the Equipment within a mutually agreed timeframe
-  following execution of this Agreement, either to Lab directly or, at Lab's direction, to Lab's customer location.</p>
+  <p>Supplier will configure/set-up, deliver and provide online training on the Equipment within a mutually agreed timeframe
+  following execution of this Agreement, either to Leasee directly or, at Leasee's direction, to Leasee's customer location.</p>
 
   <h2>9. DEFAULT AND REMEDIES</h2>
   <p>Each of the following is a material default: (a) failure to make any Lease Payment when due &mdash; a single missed
-  payment is sufficient; (b) Lab's insolvency or bankruptcy. Supplier shall give Lab written notice of any default and five
-  (5) days to cure it. If the default is not cured, Supplier may terminate this Agreement and repossess the Equipment, in
-  addition to any other remedy available at law.</p>
+  payment is sufficient; (b) Leasee's insolvency or bankruptcy. Supplier shall give Leasee written notice of any default and
+  five (5) days to cure it. If the default is not cured, Supplier may terminate this Agreement and repossess the Equipment,
+  in addition to any other remedy available at law.</p>
 
   <h2>10. WARRANTIES; LIMITATION OF LIABILITY</h2>
   <p>Supplier warrants the Equipment will be free of substantive defects in material and workmanship for one (1) year from
@@ -94,10 +96,11 @@
   <h2>13. SIGNATURES</h2>
   <p><strong>{{ supplier.name|upper }}:</strong></p>
   <p>By: <span class="sig-line">&nbsp;</span> &nbsp;&nbsp; Date: <span class="sig-line" style="min-width:140px;">&nbsp;</span></p>
+  <p>Keith Crittenden, CEO</p>
   <p style="margin-top:24px;"><strong>{{ (lab.owner_name or '[OWNER NAME]')|upper }}, INDIVIDUALLY AND AS OWNER OF {{ lab.name|upper }}:</strong></p>
   <p>By: <span class="sig-line">&nbsp;</span> &nbsp;&nbsp; Date: <span class="sig-line" style="min-width:140px;">&nbsp;</span></p>
-  <p>Print Name: {{ lab.owner_name or '' }}<span class="sig-line">&nbsp;</span></p>
-  <p>Social Security Number: <span class="sig-line">&nbsp;</span></p>
-  <p>Home Address: <span class="sig-line">&nbsp;</span></p>
+  <p>Name: {{ lab.owner_name or '' }}<span class="sig-line">&nbsp;</span></p>
+  <p>Home Address: <span class="sig-line" style="display:block; width:100%; min-width:0;">&nbsp;</span></p>
+  <p><span class="sig-line" style="display:block; width:100%; min-width:0;">&nbsp;</span></p>
 </div>
 {% endblock %}
