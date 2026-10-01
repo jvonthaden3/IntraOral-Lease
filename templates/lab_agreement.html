@@ -14,6 +14,7 @@
   </div>
 
   <h1>EQUIPMENT LEASE AGREEMENT</h1>
+  <p>&nbsp;</p>
 
   <p>This Equipment Lease Agreement (&ldquo;Agreement&rdquo;) is made effective as of
   <span class="sig-line">&nbsp;</span>, 20__, by and between {{ supplier.name }}{% if supplier.address %}, of {{ supplier.address }}{% endif %}
@@ -95,8 +96,8 @@
 
   <h2>13. SIGNATURES</h2>
   <p><strong>{{ supplier.name|upper }}:</strong></p>
-  <p>By: <span class="sig-line">&nbsp;</span> &nbsp;&nbsp; Date: <span class="sig-line" style="min-width:140px;">&nbsp;</span></p>
   <p>Keith Crittenden, CEO</p>
+  <p>By: <span class="sig-line">&nbsp;</span> &nbsp;&nbsp; Date: <span class="sig-line" style="min-width:140px;">&nbsp;</span></p>
   <p style="margin-top:24px;"><strong>{{ (lab.owner_name or '[OWNER NAME]')|upper }}, INDIVIDUALLY AND AS OWNER OF {{ lab.name|upper }}:</strong></p>
   <p>By: <span class="sig-line">&nbsp;</span> &nbsp;&nbsp; Date: <span class="sig-line" style="min-width:140px;">&nbsp;</span></p>
   <p>Name: {{ lab.owner_name or '' }}<span class="sig-line">&nbsp;</span></p>
